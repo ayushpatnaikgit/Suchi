@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Dark mode PDF — invert white pages to dark */
+.dark .react-pdf__Page canvas {
+  filter: invert(0.88) hue-rotate(180deg);
+}
+.dark .react-pdf__Page .react-pdf__Page__textContent {
+  filter: invert(0.88) hue-rotate(180deg);
+}

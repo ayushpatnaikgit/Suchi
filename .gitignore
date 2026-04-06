@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Suchi runtime
+.tantivy-index/
+.references-cache.json
+.pageindex.json
+.collection-index.json
+
+# Config (contains API keys)
+config.yaml
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+*.whl
+*.tar.gz
