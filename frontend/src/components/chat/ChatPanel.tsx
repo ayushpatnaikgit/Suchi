@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Send, X, Bot, User, Sparkles, FileText, FolderOpen, MessageSquareQuote } from "lucide-react";
+import { Send, X, Bot, User, Sparkles, FileText, FolderOpen, MessageSquareQuote, Image as ImageIcon } from "lucide-react";
 import Markdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import type { Entry } from "../../lib/types";
 
 interface ChatMessage {
@@ -171,18 +174,20 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
       const entryId = titleMap.get(title.toLowerCase());
       if (entryId) {
         // Use a custom protocol that we'll intercept in the markdown renderer
-        return `[${title}](cloudref://entry/${entryId})`;
+        return `[${title}](suchi://entry/${entryId})`;
       }
       return `**${title}**`;
     });
 
     return (
       <Markdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         components={{
           a: ({ href, children }) => {
-            // Handle cloudref:// links (paper references)
-            if (href?.startsWith("cloudref://entry/")) {
-              const entryId = href.replace("cloudref://entry/", "");
+            // Handle suchi:// links (paper references)
+            if (href?.startsWith("suchi://entry/")) {
+              const entryId = href.replace("suchi://entry/", "");
               return (
                 <button
                   onClick={() => onNavigateToEntry?.(entryId)}
@@ -274,6 +279,9 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
             <div className="flex flex-wrap gap-2 justify-center mt-4">
               {context.type === "paper" && (
                 <>
+                  {currentPageNumber && currentPageNumber > 0 && (
+                    <SuggestionChip text={`Explain page ${currentPageNumber} (with screenshot)`} onClick={(t) => { handleSend(t); }} />
+                  )}
                   <SuggestionChip text="Summarize this paper" onClick={(t) => { handleSend(t); }} />
                   <SuggestionChip text="What are the key findings?" onClick={(t) => { handleSend(t); }} />
                   <SuggestionChip text="Explain the methodology" onClick={(t) => { handleSend(t); }} />
@@ -345,6 +353,20 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
             <span className="font-medium text-yellow-700 dark:text-yellow-400">Selected: </span>
             {context.selectedText.slice(0, 300)}{context.selectedText.length > 300 ? "..." : ""}
           </div>
+        </div>
+      )}
+
+      {/* Page context indicator */}
+      {context.type === "paper" && currentPageNumber && currentPageNumber > 0 && (
+        <div className="px-4 pb-1">
+          <button
+            onClick={() => handleSend(`Explain what's on page ${currentPageNumber} (screenshot attached)`)}
+            disabled={streaming}
+            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors disabled:opacity-50"
+          >
+            <ImageIcon size={12} />
+            Ask about page {currentPageNumber} (sends screenshot)
+          </button>
         </div>
       )}
 

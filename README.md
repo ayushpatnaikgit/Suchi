@@ -21,8 +21,15 @@
 
 **Suchi** (सूची, Sanskrit for "index/catalog") is a reference manager that gives you a polished desktop app **and** full terminal power. Every button in the GUI has a CLI equivalent. Every file is human-readable. Your library is just a folder of YAML and PDFs — sync it anywhere, script it however you want.
 
-<!-- TODO: Add screenshots here -->
-<!-- ![Desktop App](assets/screenshots/desktop.png) -->
+<p align="center">
+  <img src="assets/screenshots/paper.png" alt="Library view with references" width="800">
+</p>
+<p align="center"><em>Three-pane layout — collections, paper list, and metadata with resolved references and citation counts</em></p>
+
+<p align="center">
+  <img src="assets/screenshots/chat.png" alt="PDF viewer with AI chat" width="800">
+</p>
+<p align="center"><em>Built-in PDF viewer with AI chat — ask about any page, get answers with LaTeX equations rendered</em></p>
 
 ## Why Suchi?
 
