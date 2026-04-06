@@ -1,4 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="24" fill="#4338CA"/>
-  <text x="64" y="74" text-anchor="middle" dominant-baseline="middle" font-family="'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', 'Courier New', monospace" font-size="52" font-weight="700" fill="#FFFFFF">[s]</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#312E81"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <!-- Brackets in muted indigo -->
+  <text x="20" y="82" font-family="'Georgia', 'Times New Roman', serif" font-size="48" font-weight="400" fill="#818CF8" opacity="0.6">[</text>
+  <!-- S in white -->
+  <text x="64" y="82" text-anchor="middle" font-family="'Georgia', 'Times New Roman', serif" font-size="48" font-weight="400" fill="#FFFFFF">s</text>
+  <!-- Right bracket -->
+  <text x="88" y="82" font-family="'Georgia', 'Times New Roman', serif" font-size="48" font-weight="400" fill="#818CF8" opacity="0.6">]</text>
 </svg>
