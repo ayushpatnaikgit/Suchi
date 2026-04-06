@@ -43,26 +43,28 @@ def _find_text(parent: ET.Element, ns: str, name: str) -> str:
 
 
 # Type mapping: bib:Article → "article", bib:Book → "book", etc.
+# NOTE: ElementTree tags use the format {namespace}localname — triple braces in f-strings
+# to produce the literal curly braces around the namespace URI.
 TYPE_MAP = {
-    f"{NS['bib']}Article": "article",
-    f"{NS['bib']}Book": "book",
-    f"{NS['bib']}BookSection": "inbook",
-    f"{NS['bib']}Thesis": "thesis",
-    f"{NS['bib']}Report": "report",
-    f"{NS['bib']}Letter": "letter",
-    f"{NS['bib']}Manuscript": "manuscript",
-    f"{NS['bib']}Patent": "patent",
-    f"{NS['bib']}Legislation": "legislation",
-    f"{NS['bib']}ConferenceProceedings": "inproceedings",
-    f"{NS['bib']}Document": "article",
-    f"{NS['bib']}Recording": "recording",
-    f"{NS['bib']}Image": "image",
-    f"{NS['bib']}MotionPicture": "film",
-    f"{NS['bib']}Illustration": "artwork",
-    f"{NS['bib']}Interview": "interview",
-    f"{NS['bib']}Memo": "note",
-    f"{NS['bib']}Data": "dataset",
-    f"{NS['z']}Attachment": "attachment",
+    _tag("bib", "Article"): "article",
+    _tag("bib", "Book"): "book",
+    _tag("bib", "BookSection"): "inbook",
+    _tag("bib", "Thesis"): "thesis",
+    _tag("bib", "Report"): "report",
+    _tag("bib", "Letter"): "letter",
+    _tag("bib", "Manuscript"): "manuscript",
+    _tag("bib", "Patent"): "patent",
+    _tag("bib", "Legislation"): "legislation",
+    _tag("bib", "ConferenceProceedings"): "inproceedings",
+    _tag("bib", "Document"): "article",
+    _tag("bib", "Recording"): "recording",
+    _tag("bib", "Image"): "image",
+    _tag("bib", "MotionPicture"): "film",
+    _tag("bib", "Illustration"): "artwork",
+    _tag("bib", "Interview"): "interview",
+    _tag("bib", "Memo"): "note",
+    _tag("bib", "Data"): "dataset",
+    _tag("z", "Attachment"): "attachment",
 }
 
 
