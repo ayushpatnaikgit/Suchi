@@ -50,12 +50,12 @@ export function EntryList({ entries, selectedId, onSelect, onContextMenu }: Entr
             }}
             className={`w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 transition-colors cursor-grab active:cursor-grabbing ${
               isSelected
-                ? "bg-blue-50 dark:bg-blue-900/30 border-l-2 border-l-blue-500"
+                ? "bg-suchi-50 dark:bg-suchi/20 border-l-2 border-l-suchi"
                 : "hover:bg-gray-50 dark:hover:bg-gray-800/50 border-l-2 border-l-transparent"
             }`}
           >
             <div className="flex items-start gap-2">
-              <FileText size={14} className={`mt-0.5 flex-shrink-0 ${entry.files.length ? "text-blue-500 dark:text-blue-400" : "text-gray-300 dark:text-gray-600"}`} />
+              <FileText size={14} className={`mt-0.5 flex-shrink-0 ${entry.files.length ? "text-suchi-light dark:text-suchi-light" : "text-gray-300 dark:text-gray-600"}`} />
               <div className="min-w-0">
                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 leading-tight">{entry.title}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">

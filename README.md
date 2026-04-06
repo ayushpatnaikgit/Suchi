@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="[ suchi ]" width="500">
+  <img src="assets/logo.png" alt="[SUCHI]" width="280">
 </p>
 <p align="center">
   <strong>CLI-first reference manager with AI-powered research tools</strong>

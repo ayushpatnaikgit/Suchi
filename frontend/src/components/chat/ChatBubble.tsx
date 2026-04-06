@@ -68,7 +68,7 @@ export function ChatBubble({
       contexts.push({
         label: "This paper",
         description: selectedEntry.title.slice(0, 60),
-        icon: <FileText size={16} className="text-blue-500" />,
+        icon: <FileText size={16} className="text-suchi-light" />,
         priority: 2,
         context: { type: "paper", entryId: selectedEntry.id, label: selectedEntry.title.slice(0, 40) },
       });

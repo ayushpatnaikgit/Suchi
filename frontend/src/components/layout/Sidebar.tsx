@@ -56,7 +56,7 @@ export function Sidebar({
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BookOpen size={18} className="text-blue-600 dark:text-blue-400" />
+          <BookOpen size={18} className="text-suchi dark:text-suchi-light" />
           <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">Suchi</span>
         </div>
         <button
@@ -74,7 +74,7 @@ export function Sidebar({
           onClick={() => { onSelectTag(null); onSelectCollection(null); }}
           className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 ${
             !selectedTag && !selectedCollection
-              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+              ? "bg-suchi-50 dark:bg-suchi/20 text-suchi-700 dark:text-suchi-light"
               : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
           }`}
         >
@@ -106,7 +106,7 @@ export function Sidebar({
                   if (e.key === "Escape") { setShowNewCollection(false); setNewCollectionName(""); }
                 }}
                 placeholder="Collection name..."
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs outline-none focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs outline-none focus:border-suchi-light bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 autoFocus
               />
             </div>
@@ -147,7 +147,7 @@ export function Sidebar({
                 onClick={() => onSelectTag(selectedTag === tag ? null : tag)}
                 className={`w-full text-left px-2 py-1 rounded text-sm flex items-center gap-2 ${
                   selectedTag === tag
-                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                    ? "bg-suchi-50 dark:bg-suchi/20 text-suchi-700 dark:text-suchi-light"
                     : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
                 }`}
               >
@@ -213,9 +213,9 @@ function CollectionNode({
         onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
         className={`group flex items-center gap-1 rounded text-sm cursor-pointer transition-colors ${
           isDragOver
-            ? "bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 ring-1 ring-blue-400"
+            ? "bg-suchi-100 dark:bg-suchi/30 text-suchi-700 dark:text-suchi-light ring-1 ring-suchi"
             : isSelected
-            ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+            ? "bg-suchi-50 dark:bg-suchi/20 text-suchi-700 dark:text-suchi-light"
             : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
         }`}
         style={{ paddingLeft: `${8 + depth * 16}px` }}
@@ -259,7 +259,7 @@ function CollectionNode({
           <input type="text" value={newName} onChange={(e) => onNewNameChange(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") onNewSubmit(); if (e.key === "Escape") onNewCancel(); }}
             placeholder="Subcollection name..."
-            className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs outline-none focus:border-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" autoFocus />
+            className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs outline-none focus:border-suchi-light bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" autoFocus />
         </div>
       )}
     </div>

@@ -100,7 +100,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
               type="text"
               value={settings?.library_dir || ""}
               onChange={(e) => updateField("library_dir", e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400 font-mono"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light font-mono"
             />
           </Field>
           <Field label="Default editor" description="Editor for opening YAML/notes (e.g. vim, code, nano). Falls back to $EDITOR.">
@@ -109,7 +109,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
               value={settings?.editor || ""}
               onChange={(e) => updateField("editor", e.target.value)}
               placeholder="$EDITOR"
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light"
             />
           </Field>
         </Section>
@@ -120,7 +120,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
             <select
               value={settings?.default_export_format || "bibtex"}
               onChange={(e) => updateField("default_export_format", e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light"
             >
               <option value="bibtex">BibTeX</option>
               <option value="csl-json">CSL-JSON</option>
@@ -137,14 +137,14 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
               value={settings?.gemini_api_key || ""}
               onChange={(e) => updateField("gemini_api_key", e.target.value)}
               placeholder="AIza..."
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400 font-mono"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light font-mono"
             />
           </Field>
           <Field label="Model" description="Gemini model to use for chat">
             <select
               value={settings?.gemini_model || "gemini-2.0-flash"}
               onChange={(e) => updateField("gemini_model", e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light"
             >
               <option value="gemini-2.5-flash">Gemini 2.5 Flash (fast)</option>
               <option value="gemini-2.5-pro">Gemini 2.5 Pro (powerful)</option>
@@ -159,7 +159,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
             <select
               value={settings?.sync_backend || "none"}
               onChange={(e) => updateField("sync_backend", e.target.value)}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light"
             >
               <option value="none">None (local only)</option>
               <option value="gdrive">Google Drive</option>
@@ -185,7 +185,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
                   max={120}
                   value={settings?.sync_interval_minutes || 15}
                   onChange={(e) => updateField("sync_interval_minutes", parseInt(e.target.value) || 15)}
-                  className="w-24 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400"
+                  className="w-24 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light"
                 />
               </Field>
               <Field label="Google Drive folder ID" description="Leave empty to use the app's default folder">
@@ -194,7 +194,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
                   value={settings?.gdrive_folder_id || ""}
                   onChange={(e) => updateField("gdrive_folder_id", e.target.value || null)}
                   placeholder="auto"
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-blue-400 font-mono"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 outline-none focus:border-suchi-light font-mono"
                 />
               </Field>
             </>
@@ -206,7 +206,7 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-suchi text-white rounded-lg text-sm hover:bg-suchi-dark disabled:opacity-50"
           >
             <Save size={14} />
             {saving ? "Saving..." : saved ? "Saved!" : "Save Settings"}
@@ -247,7 +247,7 @@ function ThemeButton({ label, active, onClick }: { label: string; active: boolea
       onClick={onClick}
       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
         active
-          ? "bg-blue-600 text-white"
+          ? "bg-suchi text-white"
           : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
       }`}
     >

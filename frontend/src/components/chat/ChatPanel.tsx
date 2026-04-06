@@ -195,7 +195,7 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
             // External links
             return (
               <a href={href} target="_blank" rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 underline">{children}</a>
+                className="text-suchi dark:text-suchi-light underline">{children}</a>
             );
           },
           // Style headings
@@ -309,7 +309,7 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
             <div
               className={`max-w-[80%] px-3 py-2 rounded-lg text-sm leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-br-sm"
+                  ? "bg-suchi text-white rounded-br-sm"
                   : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-bl-sm"
               }`}
             >
@@ -322,8 +322,8 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
               )}
             </div>
             {msg.role === "user" && (
-              <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <User size={14} className="text-blue-600 dark:text-blue-400" />
+              <div className="w-7 h-7 rounded-full bg-suchi-50 dark:bg-suchi/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <User size={14} className="text-suchi dark:text-suchi-light" />
               </div>
             )}
           </div>

@@ -86,12 +86,12 @@ export function DropZone({ onDrop, children }: DropZoneProps) {
 
       {/* Drag overlay — only for external file drops */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 bg-blue-50/90 dark:bg-blue-950/90 border-2 border-dashed border-blue-400 dark:border-blue-500 rounded-lg flex flex-col items-center justify-center backdrop-blur-sm">
-          <Upload size={48} className="text-blue-500 mb-3" />
-          <div className="text-lg font-medium text-blue-700">
+        <div className="absolute inset-0 z-50 bg-suchi-50/90 dark:bg-suchi-700/90 border-2 border-dashed border-suchi-light dark:border-suchi rounded-lg flex flex-col items-center justify-center backdrop-blur-sm">
+          <Upload size={48} className="text-suchi-light mb-3" />
+          <div className="text-lg font-medium text-suchi-700">
             Drop PDF files here
           </div>
-          <div className="text-sm text-blue-500 mt-1">
+          <div className="text-sm text-suchi-light mt-1">
             Metadata will be extracted automatically
           </div>
         </div>
@@ -102,7 +102,7 @@ export function DropZone({ onDrop, children }: DropZoneProps) {
         <div
           className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg text-sm font-medium ${
             isUploading
-              ? "bg-blue-600 text-white"
+              ? "bg-suchi text-white"
               : uploadStatus.startsWith("Added")
               ? "bg-green-600 text-white"
               : "bg-red-600 text-white"

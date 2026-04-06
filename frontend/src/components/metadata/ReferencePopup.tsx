@@ -80,7 +80,7 @@ export function ReferencePopup({
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Reference</span>
             {reference.resolved && (
-              <span className="text-[10px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded font-medium">
+              <span className="text-[10px] px-1.5 py-0.5 bg-suchi-50 dark:bg-suchi/20 text-suchi dark:text-suchi-light rounded font-medium">
                 Resolved via OpenAlex
               </span>
             )}
@@ -184,7 +184,7 @@ export function ReferencePopup({
               <button
                 onClick={handleAdd}
                 disabled={adding || (!reference.doi && !reference.title)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-suchi text-white rounded text-xs font-medium hover:bg-suchi-dark disabled:opacity-50"
               >
                 {adding ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                 {adding ? "Adding..." : "Add to Library"}

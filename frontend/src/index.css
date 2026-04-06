@@ -2,6 +2,18 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Brand color: #5170FF */
+@theme {
+  --color-suchi: #5170FF;
+  --color-suchi-light: #7B93FF;
+  --color-suchi-dark: #3A54CC;
+  --color-suchi-50: #EEF1FF;
+  --color-suchi-100: #DDE4FF;
+  --color-suchi-200: #C2CCFF;
+  --color-suchi-600: #5170FF;
+  --color-suchi-700: #3A54CC;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

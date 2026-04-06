@@ -106,7 +106,7 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
       <div className="flex flex-wrap gap-2 pt-1">
         {hasPdf ? (
           <button onClick={() => onViewPdf(entry)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-suchi text-white rounded text-sm hover:bg-suchi-dark">
             <FileText size={14} />View PDF
           </button>
         ) : (
@@ -207,7 +207,7 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
           <div className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1.5">Tags</div>
           <div className="flex flex-wrap gap-1.5">
             {entry.tags.map((tag) => (
-              <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs">
+              <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-suchi-50 dark:bg-suchi/20 text-suchi-700 dark:text-suchi-light rounded text-xs">
                 <Tag size={10} />{tag}
               </span>
             ))}
