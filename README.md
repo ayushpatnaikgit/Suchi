@@ -1,11 +1,11 @@
 <p align="center">
-  <h1 align="center">सूची · Suchi</h1>
-  <p align="center">
-    <strong>CLI-first reference manager with AI-powered research tools</strong>
-  </p>
-  <p align="center">
-    Unix philosophy meets academic research. No Electron. No vendor lock-in. Your papers, your filesystem.
-  </p>
+  <img src="assets/logo.svg" alt="[ suchi ]" width="500">
+</p>
+<p align="center">
+  <strong>CLI-first reference manager with AI-powered research tools</strong>
+</p>
+<p align="center">
+  Unix philosophy meets academic research. No Electron. No vendor lock-in. Your papers, your filesystem.
 </p>
 
 <p align="center">
