@@ -32,12 +32,59 @@ Your library is a directory of YAML files and PDFs — no proprietary database, 
 | Closed metadata extraction | **Multi-source resolution** — CrossRef, OpenAlex, Semantic Scholar, arXiv, OpenLibrary |
 | Vendor lock-in | **Open formats** — YAML metadata, standard PDFs, BibTeX/CSL-JSON/RIS export |
 
+## Installation
+
+### Desktop App (recommended for most users)
+
+Download the latest release for your platform:
+
+| Platform | Download |
+|----------|----------|
+| **macOS** | [Suchi.dmg](https://github.com/ayushpatnaikgit/Suchi/releases) |
+| **Windows** | [Suchi-Setup.exe](https://github.com/ayushpatnaikgit/Suchi/releases) |
+| **Linux** | [Suchi.AppImage](https://github.com/ayushpatnaikgit/Suchi/releases) |
+
+The desktop app bundles everything — no Python or Node.js needed.
+
+### CLI Only (pip)
+
+```bash
+pip install suchi
+suchi --help
+```
+
+### From Source (developers)
+
+**Requirements:** Python 3.11+, Node.js 18+, Rust (for desktop builds)
+
+```bash
+git clone git@github.com:ayushpatnaikgit/Suchi.git
+cd Suchi
+./setup.sh    # installs backend + frontend + creates config
+```
+
+### Running
+
+```bash
+# CLI only — no server needed
+suchi add 10.1038/nature12373
+suchi search "machine learning"
+
+# Web UI — start both servers
+make dev
+# → Backend:  http://127.0.0.1:9876
+# → Frontend: http://localhost:5173
+
+# Desktop app (Tauri)
+cd src-tauri && cargo tauri dev
+
+# Or just the API server
+suchi serve
+```
+
 ## Quick Start
 
 ```bash
-# Install
-cd backend && pip install -e .
-
 # Add your first paper (by DOI)
 suchi add 10.1038/nature12373
 
