@@ -73,6 +73,24 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
   const [discoverSection, setDiscoverSection] = useState<"citing" | "related" | "author">("citing");
   const [authorDialog, setAuthorDialog] = useState<{ author: AuthorInfo; papers: DiscoveredPaper[] } | null>(null);
   const [addingPaper, setAddingPaper] = useState<string | null>(null); // DOI being added
+  const [selectedDiscoverRef, setSelectedDiscoverRef] = useState<{ ref: Reference; x: number; y: number } | null>(null);
+
+  // Convert a DiscoveredPaper to the Reference format used by ReferencePopup
+  const discoveredToRef = (paper: DiscoveredPaper): Reference => ({
+    raw_text: paper.title,
+    title: paper.title,
+    authors_raw: paper.author?.map(a => `${a.given} ${a.family}`.trim()).join(", ") || "",
+    year: paper.year ? String(paper.year) : undefined,
+    doi: paper.doi,
+    abstract: paper.abstract,
+    journal: paper.venue,
+    cited_by_count: paper.cited_by_count,
+    url: (paper as any).url,
+    tags: (paper as any).tags || [],
+    resolved: true,
+    in_library: paper.in_library || false,
+    library_id: paper.library_id,
+  });
 
   // Load discovery data
   const loadDiscovery = useCallback(async () => {
@@ -451,7 +469,17 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
                     ).map((paper, i) => (
                       <div
                         key={paper.doi || paper.title + i}
-                        className="px-3 py-2 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm transition-colors"
+                        className="px-3 py-2 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm transition-colors cursor-pointer"
+                        onClick={(e) => {
+                          // Don't open popup if they clicked a nested button (Add to Library, View in Library, author name)
+                          if ((e.target as HTMLElement).closest("button")) return;
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setSelectedDiscoverRef({
+                            ref: discoveredToRef(paper),
+                            x: rect.left,
+                            y: rect.bottom,
+                          });
+                        }}
                       >
                         <div className="flex items-start gap-2">
                           <div className="min-w-0 flex-1">
@@ -548,7 +576,19 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
             {/* Papers list */}
             <div className="overflow-y-auto max-h-[60vh] divide-y divide-gray-100 dark:divide-gray-700/50">
               {authorDialog.papers.map((paper, i) => (
-                <div key={paper.doi || i} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div
+                  key={paper.doi || i}
+                  className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button")) return;
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setSelectedDiscoverRef({
+                      ref: discoveredToRef(paper),
+                      x: rect.left,
+                      y: rect.bottom,
+                    });
+                  }}
+                >
                   <div className="flex items-start gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug">
@@ -616,6 +656,21 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
           onAddToLibrary={handleAddReference}
           onNavigateToEntry={(id) => {
             setSelectedRef(null);
+            if (onNavigateToEntry) onNavigateToEntry(id);
+          }}
+        />
+      )}
+
+      {/* Discovered paper popup — same ReferencePopup component */}
+      {selectedDiscoverRef && (
+        <ReferencePopup
+          reference={selectedDiscoverRef.ref}
+          currentCollections={entry.collections}
+          position={{ x: selectedDiscoverRef.x, y: selectedDiscoverRef.y }}
+          onClose={() => setSelectedDiscoverRef(null)}
+          onAddToLibrary={handleAddReference}
+          onNavigateToEntry={(id) => {
+            setSelectedDiscoverRef(null);
             if (onNavigateToEntry) onNavigateToEntry(id);
           }}
         />
