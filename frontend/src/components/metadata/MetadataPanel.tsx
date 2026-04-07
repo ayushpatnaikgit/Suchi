@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Entry } from "../../lib/types";
-import { ExternalLink, Trash2, Tag, Calendar, BookOpen, User, Hash, FileText, ChevronDown, ChevronRight, CheckCircle, Search, Upload, Loader2, Quote } from "lucide-react";
+import { ExternalLink, Trash2, Tag, Calendar, BookOpen, User, Hash, FileText, ChevronDown, ChevronRight, CheckCircle, Search, Upload, Loader2, Quote, Compass, ArrowUpRight, ArrowDownRight, Sparkles, X, Plus, Library } from "lucide-react";
 import { ReferencePopup } from "./ReferencePopup";
 
 interface Reference {
@@ -18,6 +18,31 @@ interface Reference {
   resolved?: boolean;
   in_library: boolean;
   library_id?: string;
+}
+
+interface DiscoveredPaper {
+  title: string;
+  author: { given: string; family: string }[];
+  year?: number;
+  doi?: string;
+  cited_by_count?: number;
+  abstract?: string;
+  venue?: string;
+  in_library?: boolean;
+  library_id?: string;
+}
+
+interface AuthorInfo {
+  name: string;
+  paper_count?: number;
+  citation_count?: number;
+  h_index?: number;
+}
+
+interface DiscoveryData {
+  citing: DiscoveredPaper[];
+  related: DiscoveredPaper[];
+  author: { author: AuthorInfo | null; papers: DiscoveredPaper[] };
 }
 
 interface MetadataPanelProps {
@@ -40,6 +65,77 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
   const [refsLoading, setRefsLoading] = useState(false);
   const [refsExpanded, setRefsExpanded] = useState(false);
   const [selectedRef, setSelectedRef] = useState<{ ref: Reference; x: number; y: number } | null>(null);
+
+  // Discovery state
+  const [discoverExpanded, setDiscoverExpanded] = useState(false);
+  const [discovery, setDiscovery] = useState<DiscoveryData | null>(null);
+  const [discoverLoading, setDiscoverLoading] = useState(false);
+  const [discoverSection, setDiscoverSection] = useState<"citing" | "related" | "author">("citing");
+  const [authorDialog, setAuthorDialog] = useState<{ author: AuthorInfo; papers: DiscoveredPaper[] } | null>(null);
+  const [addingPaper, setAddingPaper] = useState<string | null>(null); // DOI being added
+
+  // Load discovery data
+  const loadDiscovery = useCallback(async () => {
+    if (!entry.doi || discovery) return;
+    setDiscoverLoading(true);
+    try {
+      const r = await fetch(`/api/discover/${encodeURIComponent(entry.id)}`);
+      if (r.ok) {
+        const data = await r.json();
+        setDiscovery(data);
+      }
+    } catch (err) {
+      console.error("Discovery failed:", err);
+    } finally {
+      setDiscoverLoading(false);
+    }
+  }, [entry.id, entry.doi, discovery]);
+
+  // Load author papers dialog
+  const loadAuthorPapers = useCallback(async (authorName: string) => {
+    try {
+      const r = await fetch(`/api/discover/${encodeURIComponent(entry.id)}/by-author?author=${encodeURIComponent(authorName)}&limit=20`);
+      if (r.ok) {
+        const data = await r.json();
+        setAuthorDialog({ author: data.author, papers: data.papers });
+      }
+    } catch (err) {
+      console.error("Author papers failed:", err);
+    }
+  }, [entry.id]);
+
+  // Add a discovered paper to the library
+  const addDiscoveredPaper = useCallback(async (paper: DiscoveredPaper) => {
+    if (!paper.doi) return;
+    setAddingPaper(paper.doi);
+    try {
+      const r = await fetch(`/api/entries/resolve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: paper.doi,
+          collections: entry.collections,
+        }),
+      });
+      if (r.ok) {
+        // Mark as in_library in our local state
+        if (discovery) {
+          const markInLib = (p: DiscoveredPaper) => {
+            if (p.doi === paper.doi) { p.in_library = true; }
+          };
+          discovery.citing.forEach(markInLib);
+          discovery.related.forEach(markInLib);
+          discovery.author.papers.forEach(markInLib);
+          setDiscovery({ ...discovery });
+        }
+        if (onRefresh) onRefresh();
+      }
+    } catch (err) {
+      console.error("Add paper failed:", err);
+    } finally {
+      setAddingPaper(null);
+    }
+  }, [entry.collections, discovery, onRefresh]);
 
   // Load references automatically when a PDF entry is selected
   useEffect(() => {
@@ -69,6 +165,9 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
     setSelectedRef(null);
     setPdfFound(null);
     setFindingPdf(false);
+    setDiscovery(null);
+    setDiscoverExpanded(false);
+    setAuthorDialog(null);
   }, [entry.id]);
 
   const handleAddReference = async (doi: string | null, title: string | null, collections: string[]) => {
@@ -282,6 +381,209 @@ export function MetadataPanel({ entry, onDelete, onViewPdf, onNavigateToEntry, o
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Discovery */}
+      {entry.doi && (
+        <div>
+          <button
+            onClick={() => {
+              setDiscoverExpanded(!discoverExpanded);
+              if (!discoverExpanded && !discovery) loadDiscovery();
+            }}
+            className="flex items-center gap-2 w-full px-3 py-2 -mx-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {discoverExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <Compass size={14} className="text-indigo-400" />
+            Discover
+            {!discoverExpanded && !discovery && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-auto">Click to load</span>
+            )}
+          </button>
+
+          {discoverExpanded && (
+            <div className="mt-2">
+              {discoverLoading ? (
+                <div className="flex items-center justify-center gap-2 py-6 text-sm text-gray-400">
+                  <Loader2 size={14} className="animate-spin" /> Discovering related papers...
+                </div>
+              ) : discovery ? (
+                <div>
+                  {/* Section tabs */}
+                  <div className="flex gap-1 mb-3">
+                    {([
+                      { key: "citing" as const, label: "Citing", icon: ArrowDownRight, count: discovery.citing.length, color: "text-green-500" },
+                      { key: "related" as const, label: "Related", icon: Sparkles, count: discovery.related.length, color: "text-blue-500" },
+                      { key: "author" as const, label: "By Author", icon: User, count: discovery.author.papers.length, color: "text-amber-500" },
+                    ]).map(({ key, label, icon: Icon, count, color }) => (
+                      <button
+                        key={key}
+                        onClick={() => setDiscoverSection(key)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                          discoverSection === key
+                            ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                      >
+                        <Icon size={12} className={color} />
+                        {label}
+                        {count > 0 && <span className="text-[10px] text-gray-400">({count})</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Author info banner (for "By Author" tab) */}
+                  {discoverSection === "author" && discovery.author.author && (
+                    <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-xs">
+                      <div className="font-medium text-amber-800 dark:text-amber-300">{discovery.author.author.name}</div>
+                      <div className="text-amber-600 dark:text-amber-400 mt-0.5">
+                        {discovery.author.author.paper_count} papers · {discovery.author.author.citation_count?.toLocaleString()} citations · h-index: {discovery.author.author.h_index}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Paper list */}
+                  <div className="space-y-0.5 max-h-[400px] overflow-y-auto">
+                    {(discoverSection === "citing" ? discovery.citing :
+                      discoverSection === "related" ? discovery.related :
+                      discovery.author.papers
+                    ).map((paper, i) => (
+                      <div
+                        key={paper.doi || paper.title + i}
+                        className="px-3 py-2 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm transition-colors"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              {paper.in_library && <CheckCircle size={11} className="text-green-500 flex-shrink-0" />}
+                              <span className={`font-medium leading-snug ${paper.in_library ? "text-green-700 dark:text-green-400" : "text-gray-800 dark:text-gray-200"}`}>
+                                {paper.title.slice(0, 100)}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center flex-wrap gap-x-1.5">
+                              {paper.author?.length > 0 && (
+                                <span>
+                                  {paper.author.slice(0, 3).map((a, j) => (
+                                    <button
+                                      key={j}
+                                      onClick={() => loadAuthorPapers(`${a.given} ${a.family}`.trim())}
+                                      className="hover:text-[#5170FF] hover:underline cursor-pointer"
+                                    >
+                                      {a.family}{j < Math.min(paper.author.length, 3) - 1 ? ", " : ""}
+                                    </button>
+                                  ))}
+                                  {paper.author.length > 3 && " et al."}
+                                </span>
+                              )}
+                              {paper.year && <span>· {paper.year}</span>}
+                              {typeof paper.cited_by_count === "number" && paper.cited_by_count > 0 && (
+                                <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-500">
+                                  · <Quote size={9} /> {paper.cited_by_count.toLocaleString()}
+                                </span>
+                              )}
+                              {paper.venue && <span className="italic text-gray-400 dark:text-gray-600">· {paper.venue.slice(0, 25)}</span>}
+                            </div>
+                          </div>
+
+                          {/* Add to library button */}
+                          {!paper.in_library && paper.doi && (
+                            <button
+                              onClick={() => addDiscoveredPaper(paper)}
+                              disabled={addingPaper === paper.doi}
+                              className="flex-shrink-0 p-1 rounded hover:bg-[#5170FF]/10 text-gray-400 hover:text-[#5170FF] transition-colors"
+                              title="Add to library"
+                            >
+                              {addingPaper === paper.doi ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Plus size={14} />
+                              )}
+                            </button>
+                          )}
+                          {paper.in_library && paper.library_id && (
+                            <button
+                              onClick={() => onNavigateToEntry?.(paper.library_id!)}
+                              className="flex-shrink-0 p-1 rounded hover:bg-green-500/10 text-green-500 transition-colors"
+                              title="View in library"
+                            >
+                              <ExternalLink size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {((discoverSection === "citing" ? discovery.citing :
+                       discoverSection === "related" ? discovery.related :
+                       discovery.author.papers).length === 0) && (
+                      <div className="py-4 text-sm text-gray-400 dark:text-gray-500 text-center italic">No papers found</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="py-4 text-sm text-gray-400 text-center">No DOI available for discovery</div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Author papers dialog */}
+      {authorDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setAuthorDialog(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <div className="font-semibold text-gray-900 dark:text-gray-100">{authorDialog.author.name}</div>
+                <div className="text-xs text-gray-400 mt-0.5">
+                  {authorDialog.author.paper_count} papers · {authorDialog.author.citation_count?.toLocaleString()} citations · h-index: {authorDialog.author.h_index}
+                </div>
+              </div>
+              <button onClick={() => setAuthorDialog(null)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                <X size={16} className="text-gray-400" />
+              </button>
+            </div>
+
+            {/* Papers list */}
+            <div className="overflow-y-auto max-h-[60vh] divide-y divide-gray-100 dark:divide-gray-700/50">
+              {authorDialog.papers.map((paper, i) => (
+                <div key={paper.doi || i} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug">
+                        {paper.title.slice(0, 100)}
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1.5">
+                        {paper.year && <span>{paper.year}</span>}
+                        {typeof paper.cited_by_count === "number" && paper.cited_by_count > 0 && (
+                          <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-500">
+                            · <Quote size={9} /> {paper.cited_by_count.toLocaleString()}
+                          </span>
+                        )}
+                        {paper.venue && <span className="italic">· {paper.venue.slice(0, 30)}</span>}
+                      </div>
+                    </div>
+
+                    {!paper.in_library && paper.doi ? (
+                      <button
+                        onClick={() => addDiscoveredPaper(paper)}
+                        disabled={addingPaper === paper.doi}
+                        className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded text-xs bg-[#5170FF] text-white hover:bg-[#3d5ce0] disabled:opacity-50 transition-colors"
+                      >
+                        {addingPaper === paper.doi ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+                        Add
+                      </button>
+                    ) : paper.in_library ? (
+                      <span className="flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20">
+                        <CheckCircle size={12} /> In library
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
