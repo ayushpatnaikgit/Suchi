@@ -1,7 +1,6 @@
 """Pydantic models for Suchi API."""
 
 from pydantic import BaseModel
-from datetime import datetime
 
 
 class Author(BaseModel):

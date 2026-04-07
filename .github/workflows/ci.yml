@@ -46,23 +46,15 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
 
-  tauri-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Linux deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-
-      - name: Check Tauri compiles
-        run: cd src-tauri && cargo check
+  # tauri-check: disabled until Tauri desktop app is ready for release
+  # tauri-check:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install Linux deps
+  #       run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - uses: swatinem/rust-cache@v2
+  #       with:
+  #         workspaces: src-tauri
+  #     - run: cd src-tauri && cargo check

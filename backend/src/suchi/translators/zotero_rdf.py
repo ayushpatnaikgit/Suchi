@@ -11,7 +11,6 @@ Zotero RDF uses RDF/XML with these namespaces:
 """
 
 import re
-import shutil
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from typing import Generator
@@ -531,7 +530,7 @@ def import_rdf_to_library(
 
             stats["imported"] += 1
 
-        except Exception as e:
+        except Exception:
             stats["errors"] += 1
 
     return stats

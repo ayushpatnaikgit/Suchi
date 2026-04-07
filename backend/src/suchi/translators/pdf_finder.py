@@ -107,8 +107,6 @@ async def _check_unpaywall(doi: str) -> list[PdfSource]:
 
     url = f"https://api.unpaywall.org/v2/{doi}"
     try:
-        from ..config import get_config
-        cfg = get_config()
         # Unpaywall requires a real email — use configured or a reasonable default
         email = "suchi-user@users.noreply.github.com"
         async with httpx.AsyncClient(timeout=15) as client:

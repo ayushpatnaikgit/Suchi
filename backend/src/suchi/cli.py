@@ -476,7 +476,7 @@ def collection_delete(
     if not force:
         if not typer.confirm(f"Delete collection '{col['name']}'?"): raise typer.Abort()
     if not col_service.delete_collection(collection_id, delete_children=recursive):
-        console.print(f"[red]Error:[/red] Failed to delete"); raise typer.Exit(1)
+        console.print("[red]Error:[/red] Failed to delete"); raise typer.Exit(1)
     console.print(f"[green]Deleted:[/green] {collection_id}")
 
 
@@ -614,7 +614,7 @@ def find_pdf_cmd(
                 success = _run_async(_download_pdf(best.url, dest))
             if success:
                 library.attach_file(eid, dest)
-                console.print(f"  [green]Downloaded![/green]")
+                console.print("  [green]Downloaded![/green]")
             else:
                 # Try other sources
                 downloaded = False
@@ -627,7 +627,7 @@ def find_pdf_cmd(
                         downloaded = True
                         break
                 if not downloaded:
-                    console.print(f"  [red]Download failed from all sources[/red]")
+                    console.print("  [red]Download failed from all sources[/red]")
 
 
 @app.command()
@@ -821,7 +821,7 @@ def import_zotero(
         raise typer.Exit(1)
 
     if not file.name.endswith(".rdf"):
-        console.print(f"[yellow]Warning:[/yellow] File doesn't end with .rdf — continuing anyway", err=True)
+        console.print("[yellow]Warning:[/yellow] File doesn't end with .rdf — continuing anyway", err=True)
 
     from .translators.zotero_rdf import import_rdf_to_library
 
@@ -835,14 +835,14 @@ def import_zotero(
     if json_out:
         _print_json(stats)
     else:
-        console.print(f"[green]Import complete:[/green]")
+        console.print("[green]Import complete:[/green]")
         console.print(f"  Imported:    {stats['imported']}")
         console.print(f"  Skipped:     {stats['skipped']} (duplicates)")
         console.print(f"  Errors:      {stats['errors']}")
         console.print(f"  Collections: {stats['collections_created']} created")
 
         if stats['imported'] > 0:
-            console.print(f"\n[dim]Run 'suchi list' to see your library.[/dim]")
+            console.print("\n[dim]Run 'suchi list' to see your library.[/dim]")
 
 
 # ─── UTILITY ────────────────────────────────────────────────────────
@@ -950,7 +950,7 @@ async def _fetch_abstract(doi: str) -> str | None:
 @app.command()
 def config():
     """Open config file in $EDITOR."""
-    from .config import CONFIG_FILE, CONFIG_DIR
+    from .config import CONFIG_FILE
     cfg = get_config()
     cfg.save()  # Ensure file exists
     editor = cfg.editor or os.environ.get("EDITOR", "vi")
@@ -1254,7 +1254,7 @@ def cited_by(
         raise typer.Exit(1)
     doi = entry.get("doi")
     if not doi:
-        console.print(f"[red]Error:[/red] No DOI for this entry. Discovery requires a DOI.")
+        console.print("[red]Error:[/red] No DOI for this entry. Discovery requires a DOI.")
         raise typer.Exit(1)
 
     with console.status("Finding citing papers..."):
@@ -1303,7 +1303,7 @@ def related(
         raise typer.Exit(1)
     doi = entry.get("doi")
     if not doi:
-        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        console.print("[red]Error:[/red] No DOI. Discovery requires a DOI.")
         raise typer.Exit(1)
 
     with console.status("Finding related papers..."):
@@ -1351,7 +1351,7 @@ def by_author(
         raise typer.Exit(1)
     doi = entry.get("doi")
     if not doi:
-        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        console.print("[red]Error:[/red] No DOI. Discovery requires a DOI.")
         raise typer.Exit(1)
 
     with console.status("Finding author's papers..."):
@@ -1401,7 +1401,7 @@ def discover(
         raise typer.Exit(1)
     doi = entry.get("doi")
     if not doi:
-        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        console.print("[red]Error:[/red] No DOI. Discovery requires a DOI.")
         raise typer.Exit(1)
 
     with console.status("Discovering related papers..."):
@@ -1440,7 +1440,7 @@ def discover(
         cites = p.get("cited_by_count", 0)
         console.print(f"  {p.get('title', '')[:65]} ({year}, {cites} cites)")
 
-    console.print(f"\n[dim]Use --json for full results, or suchi cited-by / related / by-author for individual queries.[/dim]")
+    console.print("\n[dim]Use --json for full results, or suchi cited-by / related / by-author for individual queries.[/dim]")
 
 
 if __name__ == "__main__":

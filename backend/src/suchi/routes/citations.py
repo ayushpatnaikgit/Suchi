@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
 from .. import library
-from ..citations.processor import format_citation, format_bibliography, format_entry_full, list_styles
+from ..citations.processor import format_bibliography, format_entry_full, list_styles
 
 router = APIRouter(prefix="/api/cite", tags=["citations"])
 

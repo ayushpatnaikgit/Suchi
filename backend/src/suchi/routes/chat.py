@@ -13,7 +13,6 @@ from .. import library
 from .. import collections as col_service
 from ..config import get_config
 from ..translators.pdf_extract import extract_text_from_pdf
-from pathlib import Path
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 

@@ -1,7 +1,5 @@
 """Find and download available PDFs for entries."""
 
-import shutil
-from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 

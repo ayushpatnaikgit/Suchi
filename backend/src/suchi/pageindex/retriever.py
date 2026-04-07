@@ -9,12 +9,11 @@ Inspired by VectifyAI/PageIndex (https://github.com/VectifyAI/PageIndex).
 """
 
 import json
-import re
 from pathlib import Path
 
 import fitz  # PyMuPDF
 
-from .indexer import _call_gemini, _extract_json_from_response, get_cached_index, INDEX_FILENAME
+from .indexer import _call_gemini, _extract_json_from_response, get_cached_index
 
 
 def retrieve_pages(

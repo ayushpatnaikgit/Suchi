@@ -23,7 +23,7 @@ def set_index_hooks(
     _on_entry_removed = on_removed
 
 from .config import get_config
-from .translators import resolve_identifier, detect_identifier_type, IdentifierType
+from .translators import resolve_identifier
 
 
 def _library_dir() -> Path:

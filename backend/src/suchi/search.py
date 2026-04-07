@@ -10,13 +10,12 @@ Supports:
   - Ranked results with BM25 scoring
 """
 
-import os
 import shutil
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import tantivy
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 
 from .config import get_config
 from . import library
