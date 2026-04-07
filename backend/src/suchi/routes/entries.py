@@ -45,23 +45,26 @@ router = APIRouter(prefix="/api/entries", tags=["entries"])
 
 def _to_response(entry: dict) -> EntryResponse:
     authors = entry.get("author", [])
+    # Normalize empty strings to None for optional fields
+    def _or_none(val: str | None) -> str | None:
+        return val if val else None
     return EntryResponse(
         id=entry.get("id", ""),
         type=entry.get("type", "article"),
         title=entry.get("title", ""),
         author=[{"family": a.get("family", ""), "given": a.get("given", "")} for a in authors],
-        doi=entry.get("doi"),
-        isbn=entry.get("isbn"),
-        date=entry.get("date"),
-        journal=entry.get("journal"),
-        volume=entry.get("volume"),
-        issue=entry.get("issue"),
-        pages=entry.get("pages"),
-        publisher=entry.get("publisher"),
-        abstract=entry.get("abstract"),
+        doi=_or_none(entry.get("doi")),
+        isbn=_or_none(entry.get("isbn")),
+        date=_or_none(entry.get("date")),
+        journal=_or_none(entry.get("journal")),
+        volume=_or_none(entry.get("volume")),
+        issue=_or_none(entry.get("issue")),
+        pages=_or_none(entry.get("pages")),
+        publisher=_or_none(entry.get("publisher")),
+        abstract=_or_none(entry.get("abstract")),
         tags=entry.get("tags", []),
         collections=entry.get("collections", []),
-        url=entry.get("url"),
+        url=_or_none(entry.get("url")),
         files=entry.get("files", []),
         added=entry.get("added"),
         modified=entry.get("modified"),
