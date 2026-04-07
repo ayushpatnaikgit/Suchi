@@ -111,7 +111,7 @@ def list_entries(
         info["id"] = entry_dir.name
         info["files"] = [
             f.name for f in entry_dir.iterdir()
-            if f.is_file() and f.name != "info.yaml" and f.name != "notes.md"
+            if f.is_file() and f.name != "info.yaml" and f.name != "notes.md" and not f.name.startswith(".")
         ]
         entries.append(info)
 
@@ -129,7 +129,7 @@ def get_entry(entry_id: str) -> dict | None:
     info["id"] = entry_id
     info["files"] = [
         f.name for f in entry_dir.iterdir()
-        if f.is_file() and f.name != "info.yaml" and f.name != "notes.md"
+        if f.is_file() and f.name != "info.yaml" and f.name != "notes.md" and not f.name.startswith(".")
     ]
     return info
 
