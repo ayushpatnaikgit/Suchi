@@ -122,23 +122,28 @@ def _split_references(text: str) -> list[str]:
             return refs
 
     # Try dot-numbered: 1. Author... 2. Author...
+    # Only accept if the numbers are sequential starting from 1 (avoids false positives
+    # from volume/page numbers like "10, 1100-1120." appearing at start of lines)
     dot_numbered = re.split(r"\n\s*(\d+)\.\s+", text)
-    if len(dot_numbered) > 3:
-        for i in range(2, len(dot_numbered), 2):
-            ref = dot_numbered[i].strip()
-            if ref and len(ref) > 20:
-                refs.append(ref)
-        if refs:
-            return refs
+    if len(dot_numbered) > 5:  # Need at least 3 refs (preamble + 3*(num+text))
+        # Verify sequential numbering: extract the captured numbers
+        captured_nums = [int(dot_numbered[i]) for i in range(1, len(dot_numbered), 2)]
+        if captured_nums and captured_nums[0] == 1 and all(
+            captured_nums[i] == captured_nums[i-1] + 1 for i in range(1, min(5, len(captured_nums)))
+        ):
+            for i in range(2, len(dot_numbered), 2):
+                ref = dot_numbered[i].strip()
+                if ref and len(ref) > 20:
+                    refs.append(ref)
+            if refs:
+                return refs
 
-    # Author-date format: "LastName, First (YEAR)." or "LastName (YEAR)."
-    # Merge multi-line references, split when a new author-year pattern starts
-    # Pattern: line starts with a capitalized word followed eventually by (YYYY)
+    # Author-date format: split when a line starts with "Surname Initial... (YYYY)."
+    # Handles: "Lastname, I. (YYYY)", "Lastname INITIALS, Lastname I (YYYY)", "Lastname I (YYYY)"
     new_ref_pattern = re.compile(
-        r"^[A-Z][A-Za-z\-']+"           # Starts with capitalized surname
-        r"(?:,\s*[A-Z]|[\s,])"          # Followed by comma+initial or space/comma
-        r".*?"                            # Anything in between
-        r"\(\s*(?:\w+\s+)?\d{4}\s*\)"   # Contains (YYYY) or (Month YYYY)
+        r"^[A-Z][A-Za-z\-'À-ÿ]+[\s,]+[A-Z]"  # Surname followed by space/comma then uppercase
+        r".*?"                                   # Anything in between
+        r"\(\s*(?:\w+\s+)?\d{4}[a-z]?\s*\)"    # Contains (YYYY) or (Month YYYY) or (2015a)
     )
 
     lines = text.split("\n")
