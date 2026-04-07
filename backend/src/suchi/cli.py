@@ -1232,5 +1232,216 @@ def index(
         raise typer.Exit(1)
 
 
+@app.command(name="cited-by")
+def cited_by(
+    entry_id: str = typer.Argument(..., help="Entry ID"),
+    limit: int = typer.Option(10, "--limit", "-n"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Find papers that cite this one (downstream citations).
+
+    Shows newer papers that build on, extend, or reference this work.
+    Like Research Rabbit's "downstream" view.
+
+    Examples:
+        suchi cited-by kucsko-2013-nanometre-scale
+        suchi cited-by my-paper --limit 20 --json | jq '.[].title'
+    """
+    from .translators.discovery import get_citing_papers
+    entry = library.get_entry(entry_id)
+    if not entry:
+        console.print(f"[red]Error:[/red] Entry not found: {entry_id}")
+        raise typer.Exit(1)
+    doi = entry.get("doi")
+    if not doi:
+        console.print(f"[red]Error:[/red] No DOI for this entry. Discovery requires a DOI.")
+        raise typer.Exit(1)
+
+    with console.status("Finding citing papers..."):
+        papers = _run_async(get_citing_papers(doi, limit=limit))
+
+    if json_out:
+        _print_json(papers)
+        return
+
+    if not papers:
+        console.print("[dim]No citing papers found.[/dim]")
+        return
+
+    console.print(f"[bold]Papers citing:[/bold] {entry.get('title', '')[:60]}\n")
+    for p in papers:
+        authors = ", ".join(a.get("family", "") for a in p.get("author", [])[:3])
+        cites = p.get("cited_by_count", 0)
+        year = p.get("year", "?")
+        doi_str = p.get("doi", "")
+        console.print(f"  [bold]{p.get('title', '')[:70]}[/bold]")
+        console.print(f"    {authors} ({year})  [amber]{cites} citations[/amber]")
+        if doi_str:
+            console.print(f"    DOI: [dim]{doi_str}[/dim]")
+        console.print()
+
+
+@app.command()
+def related(
+    entry_id: str = typer.Argument(..., help="Entry ID"),
+    limit: int = typer.Option(10, "--limit", "-n"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Find related/similar papers.
+
+    Uses Semantic Scholar's recommendation engine. These papers may not
+    directly cite each other but cover similar topics.
+
+    Examples:
+        suchi related kucsko-2013-nanometre-scale
+        suchi related my-paper --json | jq '.[].doi'
+    """
+    from .translators.discovery import get_related_papers
+    entry = library.get_entry(entry_id)
+    if not entry:
+        console.print(f"[red]Error:[/red] Entry not found: {entry_id}")
+        raise typer.Exit(1)
+    doi = entry.get("doi")
+    if not doi:
+        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        raise typer.Exit(1)
+
+    with console.status("Finding related papers..."):
+        papers = _run_async(get_related_papers(doi, limit=limit))
+
+    if json_out:
+        _print_json(papers)
+        return
+
+    if not papers:
+        console.print("[dim]No related papers found.[/dim]")
+        return
+
+    console.print(f"[bold]Related to:[/bold] {entry.get('title', '')[:60]}\n")
+    for p in papers:
+        authors = ", ".join(a.get("family", "") for a in p.get("author", [])[:3])
+        cites = p.get("cited_by_count", 0)
+        year = p.get("year", "?")
+        console.print(f"  [bold]{p.get('title', '')[:70]}[/bold]")
+        console.print(f"    {authors} ({year})  [amber]{cites} citations[/amber]")
+        console.print()
+
+
+@app.command(name="by-author")
+def by_author(
+    entry_id: str = typer.Argument(..., help="Entry ID"),
+    author: Optional[str] = typer.Option(None, "--author", "-a", help="Author name to search (default: first author)"),
+    limit: int = typer.Option(10, "--limit", "-n"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Find more papers by the same author.
+
+    Shows the author's most-cited papers. Defaults to the first author.
+    Use --author to pick a specific co-author.
+
+    Examples:
+        suchi by-author kucsko-2013-nanometre-scale
+        suchi by-author my-paper --author "Lukin"
+        suchi by-author my-paper --json | jq '.papers[].title'
+    """
+    from .translators.discovery import get_author_papers
+    entry = library.get_entry(entry_id)
+    if not entry:
+        console.print(f"[red]Error:[/red] Entry not found: {entry_id}")
+        raise typer.Exit(1)
+    doi = entry.get("doi")
+    if not doi:
+        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        raise typer.Exit(1)
+
+    with console.status("Finding author's papers..."):
+        result = _run_async(get_author_papers(doi, author_name=author, limit=limit))
+
+    if json_out:
+        _print_json(result)
+        return
+
+    author_info = result.get("author", {})
+    papers = result.get("papers", [])
+
+    if author_info:
+        console.print(f"[bold]{author_info.get('name', '?')}[/bold]")
+        console.print(f"  Papers: {author_info.get('paper_count', '?')}  ·  Citations: {author_info.get('citation_count', '?')}  ·  h-index: {author_info.get('h_index', '?')}")
+        console.print()
+
+    if not papers:
+        console.print("[dim]No papers found.[/dim]")
+        return
+
+    for p in papers:
+        cites = p.get("cited_by_count", 0)
+        year = p.get("year", "?")
+        console.print(f"  [bold]{p.get('title', '')[:70]}[/bold]")
+        console.print(f"    ({year})  [amber]{cites} citations[/amber]")
+        console.print()
+
+
+@app.command()
+def discover(
+    entry_id: str = typer.Argument(..., help="Entry ID"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Full discovery: citing papers + related works + same-author papers.
+
+    Runs all discovery queries in parallel. Like Research Rabbit.
+
+    Examples:
+        suchi discover kucsko-2013-nanometre-scale
+        suchi discover my-paper --json | jq '.citing | length'
+    """
+    from .translators.discovery import discover_all
+    entry = library.get_entry(entry_id)
+    if not entry:
+        console.print(f"[red]Error:[/red] Entry not found: {entry_id}")
+        raise typer.Exit(1)
+    doi = entry.get("doi")
+    if not doi:
+        console.print(f"[red]Error:[/red] No DOI. Discovery requires a DOI.")
+        raise typer.Exit(1)
+
+    with console.status("Discovering related papers..."):
+        results = _run_async(discover_all(doi))
+
+    if json_out:
+        _print_json(results)
+        return
+
+    console.print(f"[bold]Discovery for:[/bold] {entry.get('title', '')[:60]}\n")
+
+    citing = results.get("citing", [])
+    related = results.get("related", [])
+    author_data = results.get("author", {})
+    author_papers = author_data.get("papers", [])
+
+    console.print(f"[bold green]▸ Citing this paper ({len(citing)})[/bold green]")
+    for p in citing[:5]:
+        year = p.get("year", "?")
+        cites = p.get("cited_by_count", 0)
+        console.print(f"  {p.get('title', '')[:65]} ({year}, {cites} cites)")
+    if len(citing) > 5:
+        console.print(f"  [dim]... and {len(citing) - 5} more[/dim]")
+
+    console.print(f"\n[bold blue]▸ Related papers ({len(related)})[/bold blue]")
+    for p in related[:5]:
+        year = p.get("year", "?")
+        cites = p.get("cited_by_count", 0)
+        console.print(f"  {p.get('title', '')[:65]} ({year}, {cites} cites)")
+
+    author_info = author_data.get("author", {})
+    aname = author_info.get("name", "?") if author_info else "?"
+    console.print(f"\n[bold yellow]▸ More by {aname} ({len(author_papers)})[/bold yellow]")
+    for p in author_papers[:5]:
+        year = p.get("year", "?")
+        cites = p.get("cited_by_count", 0)
+        console.print(f"  {p.get('title', '')[:65]} ({year}, {cites} cites)")
+
+    console.print(f"\n[dim]Use --json for full results, or suchi cited-by / related / by-author for individual queries.[/dim]")
+
+
 if __name__ == "__main__":
     app()

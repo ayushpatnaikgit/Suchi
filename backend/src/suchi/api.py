@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import entries, search, export, collections, settings, chat, citations, references, pdf_finder, annotations
+from .routes import entries, search, export, collections, settings, chat, citations, references, pdf_finder, annotations, discovery
 from . import library as lib_module
 from .search import index_entry, remove_from_index, rebuild_index
 
@@ -47,6 +47,7 @@ app.include_router(citations.router)
 app.include_router(references.router)
 app.include_router(pdf_finder.router)
 app.include_router(annotations.router)
+app.include_router(discovery.router)
 
 
 @app.get("/api/health")
