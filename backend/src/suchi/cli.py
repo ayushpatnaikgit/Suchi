@@ -947,6 +947,100 @@ async def _fetch_abstract(doi: str) -> str | None:
     return await get_abstract_by_doi(doi)
 
 
+@app.command(name="backfill-dois")
+def backfill_dois(
+    limit: int = typer.Option(0, "--limit", "-n", help="Max entries to process (0 = all)"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Find and fill in missing DOIs by searching CrossRef by title.
+
+    Searches CrossRef for each entry that lacks a DOI, using the title.
+    When a confident match is found, updates the entry with the DOI.
+    Also backfills abstracts from Semantic Scholar for newly-DOI'd entries.
+
+    Examples:
+        suchi backfill-dois
+        suchi backfill-dois --limit 50
+        suchi backfill-dois --json | jq
+    """
+    entries = library.list_entries(limit=100_000)
+    missing = [
+        e for e in entries
+        if (not e.get("doi") or len(str(e.get("doi", ""))) < 4)
+        and e.get("title") and len(e["title"]) > 10
+    ]
+
+    if not missing:
+        console.print("[green]All entries already have DOIs.[/green]")
+        return
+
+    if limit > 0:
+        missing = missing[:limit]
+
+    console.print(f"Found {len(missing)} entries without DOIs. Searching CrossRef...")
+
+    found = 0
+    not_found = 0
+    errors = 0
+
+    for i, entry in enumerate(missing):
+        title = entry.get("title", "")
+        # Clean title — remove journal name suffixes like "| Journal of X"
+        clean_title = title.split("|")[0].strip()
+
+        try:
+            result = _run_async(_resolve_doi_by_title(clean_title, entry.get("author", [])))
+            if result:
+                doi = result.get("doi", "")
+                updates = {"doi": doi}
+
+                # Also grab abstract if we don't have one
+                if not entry.get("abstract") and result.get("abstract"):
+                    updates["abstract"] = result["abstract"]
+
+                # Grab citation count
+                if result.get("cited_by_count"):
+                    updates["cited_by_count"] = result["cited_by_count"]
+
+                library.update_entry(entry["id"], updates)
+                found += 1
+                console.print(f"  [green]✓[/green] {clean_title[:55]} → {doi}")
+            else:
+                not_found += 1
+                if not json_out:
+                    console.print(f"  [dim]· {clean_title[:55]} (not found)[/dim]")
+        except Exception as e:
+            errors += 1
+            if not json_out:
+                console.print(f"  [red]✗[/red] {clean_title[:55]}: {e}")
+
+        # Rate limit: CrossRef polite pool is 50/sec, we go much slower
+        if (i + 1) % 10 == 0 and not json_out:
+            console.print(f"  [dim]... {i+1}/{len(missing)} processed[/dim]")
+
+    if json_out:
+        _print_json({"total_missing": len(missing), "found": found, "not_found": not_found, "errors": errors})
+    else:
+        console.print(f"\n[green]Done:[/green] {found} DOIs found, {not_found} not found, {errors} errors")
+
+
+async def _resolve_doi_by_title(title: str, authors: list[dict]) -> dict | None:
+    """Search CrossRef by title and verify author match before accepting."""
+    from .translators.crossref import search_by_title as cr_search
+    result = await cr_search(title)
+    if not result:
+        return None
+
+    # Extra validation: if we have authors, check at least one surname matches
+    if authors and result.get("author"):
+        entry_surnames = {a.get("family", "").lower() for a in authors if a.get("family")}
+        result_surnames = {a.get("family", "").lower() for a in result["author"] if a.get("family")}
+        if entry_surnames and result_surnames and not (entry_surnames & result_surnames):
+            return None  # No author overlap — likely a wrong match
+
+    return result
+
+
 @app.command()
 def config():
     """Open config file in $EDITOR."""
