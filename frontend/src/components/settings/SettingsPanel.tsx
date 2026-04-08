@@ -187,18 +187,6 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Connected to Google Drive</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{syncStatus.email}</div>
                   </div>
-                  <button
-                    onClick={async () => {
-                      await fetch("/api/sync/logout", { method: "POST" });
-                      setSyncStatus(null);
-                      fetchSyncStatus();
-                    }}
-                    className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title="Sign out"
-                  >
-                    <LogOut size={12} />
-                    Sign out
-                  </button>
                 </div>
 
                 {syncStatus.last_sync && (
@@ -262,6 +250,22 @@ export function SettingsPanel({ onClose, theme, onToggleTheme }: SettingsPanelPr
                   <span className="text-sm text-gray-700 dark:text-gray-300">Sync in the background every {settings?.sync_interval_minutes || 15} minutes</span>
                 </label>
               </Field>
+
+              {/* Sign Out */}
+              <div className="pt-2">
+                <button
+                  onClick={async () => {
+                    if (!confirm("Sign out from Google Drive? Your local library won't be affected.")) return;
+                    await fetch("/api/sync/logout", { method: "POST" });
+                    setSyncStatus(null);
+                    fetchSyncStatus();
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <LogOut size={14} />
+                  Sign out from Google Drive
+                </button>
+              </div>
             </>
           ) : (
             /* Not signed in */
