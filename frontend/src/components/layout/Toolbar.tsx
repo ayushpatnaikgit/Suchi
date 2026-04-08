@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Search, Download, Sun, Moon, Settings, ChevronDown, FileText, Upload, Library, Cloud, CloudOff, RefreshCw, Loader2 } from "lucide-react";
+import { Plus, Search, Download, Sun, Moon, Settings, ChevronDown, FileText, Upload, Library, Cloud, CloudOff, Loader2 } from "lucide-react";
 import type { Theme } from "../../hooks/useTheme";
 
 interface ToolbarProps {

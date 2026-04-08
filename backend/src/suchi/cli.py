@@ -1082,7 +1082,7 @@ def serve(
 
         connector_thread = threading.Thread(target=_start_connector, daemon=True)
         connector_thread.start()
-        console.print(f"[green]Zotero Connector shim → localhost:23119[/green]")
+        console.print("[green]Zotero Connector shim → localhost:23119[/green]")
 
     console.print(f"[green]Suchi API server → {host}:{port}[/green]")
     uvicorn.run("suchi.api:app", host=host, port=port, reload=False)

@@ -16,10 +16,7 @@ Endpoints implemented:
 """
 
 import asyncio
-import json
 import logging
-from datetime import datetime, timezone
-from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +25,6 @@ import uvicorn
 
 from .. import library
 from .. import collections as col_service
-from ..config import get_config
 
 # Track the currently selected collection in the Suchi UI.
 # When the user selects a collection in the sidebar, the UI calls
@@ -230,8 +226,6 @@ def _build_targets() -> list[dict]:
 
     # Get all collections from Suchi
     try:
-        flat = col_service.get_collections_flat()
-        # Build parent→children map for ordering
         tree = col_service.get_collection_tree()
         _add_tree_targets(tree, targets, level=1)
     except Exception as e:

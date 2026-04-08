@@ -81,7 +81,7 @@ function App() {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredEntries, setFilteredEntries] = useState<Entry[]>([]);
-  const [viewingPdf, setViewingPdf] = useState<{ url: string; title: string } | null>(null);
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; title: string; initialPage?: number } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [pdfSelection, setPdfSelection] = useState<{ text: string; entryId: string } | null>(null);
   const [currentPdfPage, setCurrentPdfPage] = useState(1);
@@ -118,8 +118,8 @@ function App() {
       setSyncStatus(status);
       // Refresh entries if anything was pulled
       if (data.pulled > 0) {
-        fetchEntries();
-        fetchCollections();
+        refresh();
+        // refresh already fetches collections
       }
     } catch (e) {
       showToast(`Sync failed: ${e instanceof Error ? e.message : "unknown"}`);
@@ -376,8 +376,8 @@ function App() {
                   if (!res.ok) throw new Error(await res.text());
                   const stats = await res.json();
                   showToast(`Imported ${stats.imported} entries, ${stats.collections_created} collections (${stats.skipped} skipped)`);
-                  fetchEntries();
-                  fetchCollections();
+                  refresh();
+                  // refresh already fetches collections
                 } catch (err) {
                   showToast(`Import failed: ${err instanceof Error ? err.message : "unknown error"}`);
                 }
@@ -400,7 +400,7 @@ function App() {
                   if (!res.ok) throw new Error(await res.text());
                   const entry = await res.json();
                   showToast(`Added: ${entry.title}`);
-                  fetchEntries();
+                  refresh();
                 } catch (err) {
                   showToast(`Upload failed: ${err instanceof Error ? err.message : "unknown error"}`);
                 }

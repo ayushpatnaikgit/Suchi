@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Entry } from "../../lib/types";
-import { ExternalLink, Trash2, Tag, Calendar, BookOpen, User, Hash, FileText, ChevronDown, ChevronRight, CheckCircle, Search, Upload, Loader2, Quote, Compass, ArrowUpRight, ArrowDownRight, Sparkles, X, Plus, Library } from "lucide-react";
+import { ExternalLink, Trash2, Tag, Calendar, BookOpen, User, Hash, FileText, ChevronDown, ChevronRight, CheckCircle, Search, Upload, Loader2, Quote, Compass, ArrowDownRight, Sparkles, X, Plus } from "lucide-react";
 import { ReferencePopup } from "./ReferencePopup";
 
 interface Reference {

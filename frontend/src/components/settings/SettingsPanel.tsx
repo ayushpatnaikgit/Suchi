@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, FolderOpen, Cloud, FileText, Monitor, Save, Sparkles, RefreshCw, LogOut, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { X, FolderOpen, Cloud, FileText, Monitor, Save, Sparkles, RefreshCw, LogOut, CheckCircle, Loader2 } from "lucide-react";
 import type { Theme } from "../../hooks/useTheme";
 
 interface Settings {

@@ -121,7 +121,7 @@ async def run_sync(
             )
             for k in ("pushed", "pulled", "conflicts", "errors"):
                 stats[k] += col_stats.get(k, 0)
-        except Exception as e:
+        except Exception:
             stats["errors"] += 1
 
     return stats

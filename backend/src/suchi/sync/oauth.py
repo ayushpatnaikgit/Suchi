@@ -13,11 +13,9 @@ No hosted server needed — the "server" runs on the user's machine for ~30 seco
 
 import json
 import os
-import threading
 import time
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from pathlib import Path
 from urllib.parse import urlencode, urlparse, parse_qs
 
 import httpx

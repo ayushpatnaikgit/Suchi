@@ -106,7 +106,6 @@ async def upload_file(local_path: Path, parent_folder_id: str, drive_filename: s
             )
         else:
             # Create new file (multipart upload: metadata + content)
-            import io
             boundary = "suchi_upload_boundary"
             metadata = json.dumps({
                 "name": filename,

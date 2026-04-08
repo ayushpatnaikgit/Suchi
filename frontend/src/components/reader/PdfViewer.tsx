@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { ZoomIn, ZoomOut, X, Highlighter, MessageSquare, Palette } from "lucide-react";
+import { ZoomIn, ZoomOut, X, Highlighter } from "lucide-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { ReferencePopup } from "../metadata/ReferencePopup";
@@ -387,12 +387,27 @@ export function PdfViewer({
     []
   );
 
+  // Go to page — scroll a specific page into view
+  const goToPage = useCallback((page: number) => {
+    const el = pageRefs.current.get(page);
+    if (el) {
+      isScrollingRef.current = true;
+      el.scrollIntoView({ behavior: "smooth" });
+      setCurrentPage(page);
+      setTimeout(() => { isScrollingRef.current = false; }, 600);
+    }
+  }, []);
+
   const handleItemClick = useCallback(
-    async (args: { pageNumber: number; dest?: string | any[] | null }) => {
-      const { dest } = args as any;
+    async (args: any) => {
+      const { dest, pageNumber } = args;
       const { x, y } = lastClickRef.current;
       const destString = lastDestStringRef.current;
       lastDestStringRef.current = null;
+
+      // Navigate to the target page
+      if (pageNumber) goToPage(pageNumber);
+
       const matched = await tryMatchReference(destString, Array.isArray(dest) ? dest : null);
       if (matched) {
         setClickedRef({ ref: matched, x, y });
@@ -403,7 +418,7 @@ export function PdfViewer({
         x, y,
       });
     },
-    [tryMatchReference]
+    [tryMatchReference, goToPage]
   );
 
   const handleAddToLibrary = async (doi: string | null, refTitle: string | null, collections: string[]) => {
@@ -416,17 +431,6 @@ export function PdfViewer({
     const data = await refRes.json();
     setReferences(data.references || []);
   };
-
-  // Go to page
-  const goToPage = useCallback((page: number) => {
-    const el = pageRefs.current.get(page);
-    if (el) {
-      isScrollingRef.current = true;
-      el.scrollIntoView({ behavior: "smooth" });
-      setCurrentPage(page);
-      setTimeout(() => { isScrollingRef.current = false; }, 600);
-    }
-  }, []);
 
   // Page numbers array
   const pageNumbers = useMemo(() => {
@@ -540,7 +544,7 @@ export function PdfViewer({
             setNumPages(pdf.numPages);
             pdfDocRef.current = pdf;
           }}
-          onItemClick={handleItemClick}
+          onItemClick={handleItemClick as any}
           loading={<div className="flex items-center justify-center h-64 text-gray-400 dark:text-gray-500 text-sm">Loading PDF...</div>}
           error={<div className="flex items-center justify-center h-64 text-red-400 text-sm">Failed to load PDF</div>}
         >

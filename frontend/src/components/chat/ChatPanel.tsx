@@ -390,7 +390,7 @@ export function ChatPanel({ context, onClose, onChangeContext, entries = [], onN
             disabled={streaming}
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim() || streaming}
             className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
           >
