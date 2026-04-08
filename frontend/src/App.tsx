@@ -14,6 +14,17 @@ import { useTheme } from "./hooks/useTheme";
 import type { Entry, Collection } from "./lib/types";
 
 /** Collect all ids from a collection tree node and its descendants */
+function findCollectionName(tree: Collection[], id: string): string | null {
+  for (const node of tree) {
+    if (node.id === id) return node.name;
+    if (node.children) {
+      const found = findCollectionName(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 function collectDescendantIds(tree: Collection[], parentId: string): Set<string> {
   const ids = new Set<string>([parentId]);
   function walk(nodes: Collection[]) {
@@ -317,6 +328,14 @@ function App() {
         onSelectCollection={(c) => {
           setSelectedCollection(c);
           setSelectedTag(null);
+          // Tell the Zotero Connector which collection is active,
+          // so papers saved from the browser go into this collection.
+          const colName = c ? findCollectionName(collectionTree, c) : null;
+          fetch("http://127.0.0.1:23119/connector/setSelectedCollection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: c, name: colName || "My Library" }),
+          }).catch(() => {}); // Silently fail if connector isn't running
         }}
         onRefresh={refresh}
         onCreateCollection={async (name, parentId) => {

@@ -27,7 +27,16 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 from .. import library
+from .. import collections as col_service
 from ..config import get_config
+
+# Track the currently selected collection in the Suchi UI.
+# When the user selects a collection in the sidebar, the UI calls
+# POST /connector/setSelectedCollection to update this.
+# The Zotero Connector then calls GET /connector/getSelectedCollection
+# and saves items into that collection.
+_selected_collection_id: str | None = None
+_selected_collection_name: str = "My Library"
 
 logger = logging.getLogger("suchi.connector")
 
@@ -125,7 +134,7 @@ async def save_snapshot(request: Request):
         "url": url,
         "author": [],
         "tags": [],
-        "collections": [],
+        "collections": [_selected_collection_id] if _selected_collection_id else [],
     }
 
     result = library.add_entry_manual(entry)
@@ -168,13 +177,38 @@ async def get_translator_code(translatorID: str = ""):
 
 @app.api_route("/connector/getSelectedCollection", methods=["GET", "POST"])
 async def get_selected_collection():
-    """Tell the connector which collection is currently selected.
-    Returns a dummy response — items go to the root library."""
-    resp = JSONResponse({
-        "id": "root",
-        "name": "My Library",
-    })
+    """Tell the connector which collection is currently selected in the Suchi UI.
+
+    When a collection is selected in the sidebar, items saved via the browser
+    extension go into that collection automatically.
+    """
+    global _selected_collection_id, _selected_collection_name
+    if _selected_collection_id:
+        resp = JSONResponse({
+            "id": _selected_collection_id,
+            "name": _selected_collection_name,
+        })
+    else:
+        resp = JSONResponse({
+            "id": "root",
+            "name": "My Library",
+        })
     return _add_zotero_headers(resp)
+
+
+@app.post("/connector/setSelectedCollection")
+async def set_selected_collection(request: Request):
+    """Called by the Suchi UI when the user selects a collection in the sidebar.
+
+    This makes the Zotero Connector save papers into that collection.
+    """
+    global _selected_collection_id, _selected_collection_name
+    body = await request.json()
+    _selected_collection_id = body.get("id")
+    _selected_collection_name = body.get("name", "My Library")
+
+    # Also expose via the main Suchi API (port 9876)
+    return _add_zotero_headers(JSONResponse({"ok": True, "collection": _selected_collection_name}))
 
 
 # ─── Conversion helpers ───
@@ -229,7 +263,7 @@ def _zotero_item_to_suchi(item: dict) -> dict:
         "abstract": item.get("abstractNote", "") or None,
         "url": item.get("url", "") or None,
         "tags": tags,
-        "collections": [],
+        "collections": [_selected_collection_id] if _selected_collection_id else [],
     }
 
     # Clean up None/empty values
