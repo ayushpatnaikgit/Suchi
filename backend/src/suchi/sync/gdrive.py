@@ -72,8 +72,8 @@ async def find_or_create_folder(name: str, parent_id: str | None = None) -> str:
 
 
 async def get_suchi_root_folder() -> str:
-    """Get or create the 'Suchi Library' root folder on Drive."""
-    return await find_or_create_folder("Suchi Library")
+    """Get or create the 'SuchiLibrary' root folder on Drive."""
+    return await find_or_create_folder("SuchiLibrary")
 
 
 # ──────────────────────────────────────────────
