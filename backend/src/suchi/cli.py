@@ -1055,11 +1055,56 @@ def config():
 def serve(
     port: int = typer.Option(9876, "--port", "-p"),
     host: str = typer.Option("127.0.0.1", "--host"),
+    no_connector: bool = typer.Option(False, "--no-connector", help="Don't start the Zotero Connector shim"),
 ):
-    """Start the Suchi API server."""
+    """Start the Suchi API server (+ Zotero Connector shim on port 23119).
+
+    The Zotero Connector shim lets the Zotero browser extension (Chrome/Firefox)
+    save papers directly to Suchi. Install the Zotero Connector from the browser
+    store — it will talk to Suchi instead of Zotero.
+
+    Examples:
+        suchi serve
+        suchi serve --port 8080
+        suchi serve --no-connector
+    """
+    import threading
     import uvicorn
-    console.print(f"[green]Suchi server → {host}:{port}[/green]")
+
+    # Start Zotero Connector shim in a background thread
+    if not no_connector:
+        def _start_connector():
+            try:
+                from .connector.server import start_connector_server
+                start_connector_server()
+            except Exception as e:
+                console.print(f"[yellow]Connector shim failed: {e}[/yellow]", err=True)
+
+        connector_thread = threading.Thread(target=_start_connector, daemon=True)
+        connector_thread.start()
+        console.print(f"[green]Zotero Connector shim → localhost:23119[/green]")
+
+    console.print(f"[green]Suchi API server → {host}:{port}[/green]")
     uvicorn.run("suchi.api:app", host=host, port=port, reload=False)
+
+
+@app.command()
+def connector(
+    port: int = typer.Option(23119, "--port", "-p"),
+):
+    """Start only the Zotero Connector shim (port 23119).
+
+    This lets the Zotero browser extension save papers to Suchi.
+    Normally started automatically by 'suchi serve'.
+
+    Examples:
+        suchi connector
+        suchi connector --port 23119
+    """
+    from .connector.server import start_connector_server
+    console.print(f"[green]Zotero Connector shim → localhost:{port}[/green]")
+    console.print("[dim]Install the Zotero Connector from Chrome/Firefox store to save papers.[/dim]")
+    start_connector_server(port=port)
 
 
 # ─── AI CHAT ────────────────────────────────────────────────────────
