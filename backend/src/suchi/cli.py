@@ -1537,5 +1537,157 @@ def discover(
     console.print("\n[dim]Use --json for full results, or suchi cited-by / related / by-author for individual queries.[/dim]")
 
 
+# ──────────────────────────────────────────────
+# Sync / Auth Commands
+# ──────────────────────────────────────────────
+
+@app.command()
+def login():
+    """Sign in to Google Drive for syncing.
+
+    Opens your browser for Google OAuth. Your library stays local —
+    only explicitly shared collections are synced.
+
+    Examples:
+        suchi login
+    """
+    from .sync.oauth import login as oauth_login, is_logged_in, get_user_email
+
+    if is_logged_in():
+        email = get_user_email()
+        console.print(f"[dim]Already signed in as {email}[/dim]")
+        if not typer.confirm("Sign in again?"):
+            return
+
+    console.print("Opening browser for Google sign-in...")
+    try:
+        token_data = oauth_login()
+        email = token_data.get("email", "unknown")
+        console.print(f"[green]✓ Signed in as {email}[/green]")
+    except Exception as e:
+        console.print(f"[red]Login failed:[/red] {e}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def logout():
+    """Sign out of Google Drive.
+
+    Clears stored tokens. Your library data is not affected.
+    """
+    from .sync.oauth import logout as oauth_logout, is_logged_in, get_user_email
+
+    if not is_logged_in():
+        console.print("[dim]Not signed in.[/dim]")
+        return
+
+    email = get_user_email()
+    oauth_logout()
+    console.print(f"[green]✓ Signed out ({email})[/green]")
+
+
+@app.command()
+def whoami():
+    """Show the currently signed-in Google account."""
+    from .sync.oauth import is_logged_in, get_user_email
+
+    if is_logged_in():
+        console.print(get_user_email() or "[dim]Signed in (email unknown)[/dim]")
+    else:
+        console.print("[dim]Not signed in. Run: suchi login[/dim]")
+
+
+@app.command()
+def sync(
+    collection_name: Optional[str] = typer.Argument(None, help="Sync a specific collection (omit for all shared)"),
+    push_only: bool = typer.Option(False, "--push", help="Upload local changes only"),
+    pull_only: bool = typer.Option(False, "--pull", help="Download remote changes only"),
+    status_only: bool = typer.Option(False, "--status", help="Show pending changes without syncing"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show what would happen"),
+):
+    """Sync shared collections with Google Drive.
+
+    Only explicitly shared collections are synced — private ones stay local.
+
+    Examples:
+        suchi sync                     # Sync all shared collections
+        suchi sync thesis-references   # Sync one collection
+        suchi sync --status            # Show pending changes
+        suchi sync --push              # Upload only
+        suchi sync --dry-run           # Preview changes
+    """
+    from .sync.oauth import is_logged_in
+
+    if not is_logged_in():
+        console.print("[red]Not signed in.[/red] Run: suchi login")
+        raise typer.Exit(1)
+
+    from .sync.engine import run_sync
+
+    with console.status("Syncing..."):
+        try:
+            stats = _run_async(run_sync(
+                collection_name=collection_name,
+                push_only=push_only,
+                pull_only=pull_only,
+                status_only=status_only,
+                dry_run=dry_run,
+            ))
+        except Exception as e:
+            console.print(f"[red]Sync failed:[/red] {e}")
+            raise typer.Exit(1)
+
+    if status_only:
+        pushed = stats.get("pending_push", 0)
+        pulled = stats.get("pending_pull", 0)
+        console.print(f"Pending: {pushed} to push, {pulled} to pull")
+    else:
+        console.print(
+            f"[green]✓ Synced:[/green] "
+            f"{stats.get('pushed', 0)} pushed, "
+            f"{stats.get('pulled', 0)} pulled, "
+            f"{stats.get('conflicts', 0)} conflicts"
+        )
+
+
+@app.command()
+def share(
+    collection_name: str = typer.Argument(..., help="Collection to share"),
+    email: str = typer.Option(..., "--with", help="Email to share with"),
+    role: str = typer.Option("editor", "--role", help="editor or viewer"),
+):
+    """Share a collection via Google Drive.
+
+    The collection will be synced to Drive and shared with the specified email.
+
+    Examples:
+        suchi share thesis-references --with supervisor@uni.edu
+        suchi share thesis-references --with examiner@uni.edu --role viewer
+    """
+    from .sync.oauth import is_logged_in
+
+    if not is_logged_in():
+        console.print("[red]Not signed in.[/red] Run: suchi login")
+        raise typer.Exit(1)
+
+    drive_role = "writer" if role == "editor" else "reader"
+
+    from .sync import gdrive
+
+    with console.status(f"Sharing {collection_name} with {email}..."):
+        try:
+            # First sync the collection to Drive
+            from .sync.engine import ensure_collection_on_drive
+            folder_id = _run_async(ensure_collection_on_drive(collection_name))
+
+            # Share the folder
+            _run_async(gdrive.share_folder(folder_id, email, role=drive_role))
+        except Exception as e:
+            console.print(f"[red]Share failed:[/red] {e}")
+            raise typer.Exit(1)
+
+    console.print(f"[green]✓ Shared '{collection_name}' with {email} ({role})[/green]")
+
+
 if __name__ == "__main__":
     app()

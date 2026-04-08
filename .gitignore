@@ -31,6 +31,8 @@ Thumbs.db
 
 # Config (contains API keys)
 config.yaml
+gdrive-token.json
+.env
 
 # Test
 .pytest_cache/
