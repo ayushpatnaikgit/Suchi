@@ -75,6 +75,48 @@ function App() {
   const [pdfSelection, setPdfSelection] = useState<{ text: string; entryId: string } | null>(null);
   const [currentPdfPage, setCurrentPdfPage] = useState(1);
 
+  // Sync state
+  const [syncStatus, setSyncStatus] = useState<{ logged_in: boolean; email?: string | null; last_sync?: string | null } | null>(null);
+  const [syncing, setSyncing] = useState(false);
+
+  // Fetch sync status on mount and periodically
+  useEffect(() => {
+    const fetchSyncStatus = async () => {
+      try {
+        const r = await fetch("/api/sync/status");
+        if (r.ok) setSyncStatus(await r.json());
+      } catch { /* ignore */ }
+    };
+    fetchSyncStatus();
+    const interval = setInterval(fetchSyncStatus, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSync = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const r = await fetch("/api/sync/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await r.json();
+      showToast(`Synced: ${data.pushed} pushed, ${data.pulled} pulled`);
+      // Refresh sync status
+      const status = await fetch("/api/sync/status").then(r => r.json());
+      setSyncStatus(status);
+      // Refresh entries if anything was pulled
+      if (data.pulled > 0) {
+        fetchEntries();
+        fetchCollections();
+      }
+    } catch (e) {
+      showToast(`Sync failed: ${e instanceof Error ? e.message : "unknown"}`);
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
+
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     entry: Entry;
@@ -296,6 +338,9 @@ function App() {
             theme={theme}
             onToggleTheme={toggleTheme}
             onOpenSettings={() => setShowSettings(true)}
+            syncStatus={syncStatus}
+            onSync={handleSync}
+            syncing={syncing}
             onImportZotero={() => {
               // Trigger a hidden file input for .rdf files
               const input = document.createElement("input");

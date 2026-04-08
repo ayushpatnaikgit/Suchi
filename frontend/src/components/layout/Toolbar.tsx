@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Search, Download, Sun, Moon, Settings, ChevronDown, FileText, Upload, Library } from "lucide-react";
+import { Plus, Search, Download, Sun, Moon, Settings, ChevronDown, FileText, Upload, Library, Cloud, CloudOff, RefreshCw, Loader2 } from "lucide-react";
 import type { Theme } from "../../hooks/useTheme";
 
 interface ToolbarProps {
@@ -12,9 +12,12 @@ interface ToolbarProps {
   onOpenSettings: () => void;
   onImportZotero?: () => void;
   onUploadPdf?: () => void;
+  syncStatus?: { logged_in: boolean; email?: string | null; last_sync?: string | null } | null;
+  onSync?: () => void;
+  syncing?: boolean;
 }
 
-export function Toolbar({ searchQuery, onSearchChange, onAdd, onExport, theme, onToggleTheme, onOpenSettings, onImportZotero, onUploadPdf }: ToolbarProps) {
+export function Toolbar({ searchQuery, onSearchChange, onAdd, onExport, theme, onToggleTheme, onOpenSettings, onImportZotero, onUploadPdf, syncStatus, onSync, syncing }: ToolbarProps) {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showAddInput, setShowAddInput] = useState(false);
   const [addInput, setAddInput] = useState("");
@@ -143,6 +146,32 @@ export function Toolbar({ searchQuery, onSearchChange, onAdd, onExport, theme, o
       >
         <Download size={16} />
       </button>
+
+      {/* Sync indicator */}
+      {syncStatus?.logged_in ? (
+        <button
+          onClick={onSync}
+          disabled={syncing}
+          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-green-500 dark:text-green-400 relative"
+          title={syncing ? "Syncing..." : `Synced as ${syncStatus.email || "unknown"}${syncStatus.last_sync ? `\nLast sync: ${new Date(syncStatus.last_sync).toLocaleString()}` : ""}\nClick to sync now`}
+        >
+          {syncing ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Cloud size={16} />
+          )}
+          {/* Green dot indicator */}
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full" />
+        </button>
+      ) : (
+        <button
+          onClick={onOpenSettings}
+          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-600"
+          title="Not connected — click to set up sync"
+        >
+          <CloudOff size={16} />
+        </button>
+      )}
 
       {/* Theme toggle */}
       <button
