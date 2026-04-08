@@ -91,6 +91,7 @@ async def save_items(request: Request):
     - uri: the page URL
     - cookie: browser cookies (ignored)
     """
+    global _selected_collection_id, _selected_collection_name
     body = await request.json()
     items = body.get("items", [])
     if not items:
@@ -99,10 +100,20 @@ async def save_items(request: Request):
             status_code=400,
         ))
 
+    # Check if the connector specified a target collection (from the dropdown)
+    # Target IDs are prefixed: "L1" = root library, "C<id>" = collection
+    target = body.get("target") or body.get("uri", "")
+    override_collection = None
+    if isinstance(target, str) and target.startswith("C"):
+        override_collection = target[1:]  # Strip "C" prefix
+
     saved = []
     for item in items:
         try:
             entry = _zotero_item_to_suchi(item)
+            # Override collection if user picked from dropdown
+            if override_collection:
+                entry["collections"] = [override_collection]
             result = library.add_entry_manual(entry)
 
             # Download PDF attachments if available
@@ -177,23 +188,69 @@ async def get_translator_code(translatorID: str = ""):
 
 @app.api_route("/connector/getSelectedCollection", methods=["GET", "POST"])
 async def get_selected_collection():
-    """Tell the connector which collection is currently selected in the Suchi UI.
+    """Tell the connector which collection is currently selected and provide
+    the full collection tree for the dropdown picker.
 
-    When a collection is selected in the sidebar, items saved via the browser
-    extension go into that collection automatically.
+    The Zotero Connector uses the `targets` array to populate a dropdown
+    that lets users pick which collection to save into.
     """
     global _selected_collection_id, _selected_collection_name
-    if _selected_collection_id:
-        resp = JSONResponse({
-            "id": _selected_collection_id,
-            "name": _selected_collection_name,
-        })
-    else:
-        resp = JSONResponse({
-            "id": "root",
-            "name": "My Library",
-        })
+
+    # Build the targets list from our collection tree
+    targets = _build_targets()
+
+    selected_id = f"C{_selected_collection_id}" if _selected_collection_id else "L1"
+    selected_name = _selected_collection_name if _selected_collection_id else "My Library"
+
+    resp = JSONResponse({
+        "id": selected_id,
+        "name": selected_name,
+        "libraryID": 1,
+        "libraryEditable": True,
+        "filesEditable": True,
+        "targets": targets,
+    })
     return _add_zotero_headers(resp)
+
+
+def _build_targets() -> list[dict]:
+    """Build the targets array for the Zotero Connector collection picker.
+
+    Format: [{id: "L1" or "C<id>", name: "...", level: 0-N, filesEditable: true}]
+    "L" prefix = library root, "C" prefix = collection.
+    Level indicates nesting depth (0 = root library, 1 = top collection, 2+ = subcollection).
+    """
+    # Start with the root library
+    targets = [{
+        "id": "L1",
+        "name": "My Library",
+        "level": 0,
+        "filesEditable": True,
+    }]
+
+    # Get all collections from Suchi
+    try:
+        flat = col_service.get_collections_flat()
+        # Build parent→children map for ordering
+        tree = col_service.get_collection_tree()
+        _add_tree_targets(tree, targets, level=1)
+    except Exception as e:
+        logger.warning(f"Failed to load collections for connector: {e}")
+
+    return targets
+
+
+def _add_tree_targets(nodes: list[dict], targets: list[dict], level: int) -> None:
+    """Recursively add collection tree nodes to the targets list (depth-first)."""
+    for node in nodes:
+        targets.append({
+            "id": f"C{node['id']}",
+            "name": node.get("name", node["id"]),
+            "level": level,
+            "filesEditable": True,
+        })
+        if node.get("children"):
+            _add_tree_targets(node["children"], targets, level + 1)
 
 
 @app.post("/connector/setSelectedCollection")
