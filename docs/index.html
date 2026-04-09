@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suchi — CLI-first reference manager</title>
+  <meta name="description" content="Suchi (सूची) is a modern reference manager built on Unix principles. Beautiful desktop app. Powerful CLI. AI-powered research tools. No vendor lock-in.">
+  <meta property="og:title" content="Suchi — CLI-first reference manager">
+  <meta property="og:description" content="Beautiful desktop app. Powerful CLI. AI-powered research tools. No vendor lock-in.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/logo.png">
+  <meta property="og:url" content="https://ayushpatnaikgit.github.io/Suchi/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/icon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand: #5170FF;
+      --brand-light: #7B93FF;
+      --bg: #0B0F1A;
+      --bg-card: #111827;
+      --bg-code: #1a2035;
+      --text: #E5E7EB;
+      --text-dim: #9CA3AF;
+      --border: #1F2937;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--brand-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 0 60px;
+    }
+
+    .hero-logo {
+      height: 80px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+    }
+
+    .hero h1 .bracket { color: var(--text-dim); }
+    .hero h1 .name { color: var(--brand-light); }
+
+    .hero .subtitle {
+      font-size: 1.25rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .hero .tagline {
+      font-size: 1rem;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-bottom: 32px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-light);
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--brand);
+      text-decoration: none;
+    }
+
+    /* Install bar */
+    .install-bar {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 32px auto 0;
+      max-width: 420px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .install-bar code { color: var(--brand-light); }
+    .install-bar .dollar { color: var(--text-dim); }
+
+    .install-bar button {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 1rem;
+    }
+
+    .install-bar button:hover { color: var(--text); }
+
+    /* Screenshots */
+    .screenshots {
+      padding: 60px 0;
+    }
+
+    .screenshots img {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .screenshots .caption {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 40px;
+    }
+
+    /* Features */
+    .features {
+      padding: 60px 0;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 48px;
+      font-weight: 700;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--brand);
+    }
+
+    .feature-card .icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* CLI demo */
+    .cli-demo {
+      padding: 60px 0;
+    }
+
+    .cli-demo h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 32px;
+    }
+
+    .terminal {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .terminal-header {
+      background: #161b22;
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .terminal-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot.red { background: #ff5f57; }
+    .terminal-dot.yellow { background: #febc2e; }
+    .terminal-dot.green { background: #28c840; }
+
+    .terminal-body {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+
+    .terminal-body .prompt { color: var(--brand-light); }
+    .terminal-body .cmd { color: #e6edf3; }
+    .terminal-body .output { color: var(--text-dim); }
+    .terminal-body .success { color: #3fb950; }
+
+    /* Comparison */
+    .comparison {
+      padding: 60px 0;
+    }
+
+    .comparison h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 32px;
+    }
+
+    .comparison table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .comparison th, .comparison td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comparison th {
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .comparison td:first-child {
+      font-weight: 500;
+    }
+
+    .comparison .check { color: #3fb950; }
+    .comparison .cross { color: #f85149; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    footer .links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 2rem; }
+      .hero .subtitle { font-size: 1rem; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .hero-buttons { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/logo.png" alt="Suchi" class="hero-logo">
+    <h1><span class="bracket">[</span> <span class="name">suchi</span> <span class="bracket">]</span></h1>
+    <p class="subtitle">A modern reference manager built on Unix principles</p>
+    <p class="tagline">Beautiful desktop app. Powerful CLI. AI-powered research tools.</p>
+
+    <div class="hero-buttons">
+      <a href="https://github.com/ayushpatnaikgit/Suchi/releases" class="btn btn-primary">
+        Download Desktop App
+      </a>
+      <a href="https://github.com/ayushpatnaikgit/Suchi" class="btn btn-secondary">
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="install-bar">
+      <span><span class="dollar">$</span> <code>pip install suchi</code></span>
+      <button onclick="navigator.clipboard.writeText('pip install suchi')" title="Copy">
+        📋
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="screenshots">
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/screenshots/paper.png" alt="Suchi library view">
+    <p class="caption">Three-pane layout with collections, paper list, and metadata with resolved references</p>
+
+    <img src="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/screenshots/chat.png" alt="Suchi AI chat">
+    <p class="caption">Built-in PDF viewer with AI chat — ask about any page, get answers with equations rendered</p>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>Why Suchi?</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon">⌨️</div>
+        <h3>CLI-first, GUI-always</h3>
+        <p>Every button in the desktop app has a CLI equivalent. 20+ commands. Pipe to jq, grep, awk. Script your research workflow.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🤖</div>
+        <h3>AI-Powered Research</h3>
+        <p>Chat with papers and collections via Gemini. PageIndex RAG retrieves the most relevant pages using LLM reasoning, not vector similarity.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📁</div>
+        <h3>Your Files, Your Filesystem</h3>
+        <p>No database lock-in. Your library is YAML files + PDFs in a regular folder. Sync via Google Drive. Read with any text editor.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔌</div>
+        <h3>Zotero Connector Compatible</h3>
+        <p>Install the Zotero browser extension from Chrome/Firefox store — it works with Suchi out of the box. 600+ site translators included.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔍</div>
+        <h3>Paper Discovery</h3>
+        <p>Find papers that cite yours, related work, and more by the same authors. Powered by Semantic Scholar. Click to add to your library.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📚</div>
+        <h3>5 Metadata APIs</h3>
+        <p>CrossRef, OpenAlex, Semantic Scholar, arXiv, and OpenLibrary. Best-in-class metadata resolution with automatic DOI discovery.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">☁️</div>
+        <h3>Google Drive Sync</h3>
+        <p>Sync collections to Google Drive. Share with collaborators. Per-user annotations — no merge conflicts on highlights.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📖</div>
+        <h3>Built-in PDF Reader</h3>
+        <p>Read papers without leaving the app. Dark mode for PDFs. Click in-text citations to see reference details with one click.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📝</div>
+        <h3>Citation Export</h3>
+        <p>BibTeX, CSL-JSON, RIS export. 10+ citation styles via citeproc (APA, MLA, Chicago, IEEE, Harvard, Nature, Vancouver...).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cli-demo">
+  <div class="container">
+    <h2>Unix Philosophy</h2>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> <span class="cmd">suchi add 10.1038/nature12373</span></div>
+        <div class="success">Added: Nanometre-scale thermometry in a living cell</div>
+        <br>
+        <div><span class="prompt">$</span> <span class="cmd">suchi search "machine learning" --json | jq '.[].title'</span></div>
+        <div class="output">"SurvTRACE: transformers for survival analysis"</div>
+        <div class="output">"RNN-SURV: A Deep Recurrent Model for Survival Analysis"</div>
+        <br>
+        <div><span class="prompt">$</span> <span class="cmd">suchi chat kucsko-2013 "What method did they use?"</span></div>
+        <div class="output">They used NV diamond centers as nanoscale thermometers,</div>
+        <div class="output">measuring temperature via spin-dependent fluorescence...</div>
+        <br>
+        <div><span class="prompt">$</span> <span class="cmd">suchi export --format bibtex | pbcopy</span></div>
+        <div class="success">Exported 415 entries to clipboard</div>
+        <br>
+        <div><span class="prompt">$</span> <span class="cmd">suchi sync</span></div>
+        <div class="success">Synced: 3 pushed, 1 pulled, 0 conflicts</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="comparison">
+  <div class="container">
+    <h2>Suchi vs Zotero vs Mendeley</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Suchi</th>
+          <th>Zotero</th>
+          <th>Mendeley</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Full CLI</td>
+          <td class="check">✓ 20+ commands</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+        </tr>
+        <tr>
+          <td>AI Chat with Papers</td>
+          <td class="check">✓ PageIndex RAG</td>
+          <td class="cross">✗</td>
+          <td class="cross">✗</td>
+        </tr>
+        <tr>
+          <td>Open Data Format</td>
+          <td class="check">✓ YAML + PDFs</td>
+          <td>SQLite</td>
+          <td>Proprietary</td>
+        </tr>
+        <tr>
+          <td>Cloud Sync</td>
+          <td class="check">✓ Google Drive</td>
+          <td>Zotero servers (300MB free)</td>
+          <td>Elsevier servers (2GB free)</td>
+        </tr>
+        <tr>
+          <td>Paper Discovery</td>
+          <td class="check">✓ Citing, related, by-author</td>
+          <td class="cross">✗</td>
+          <td>✓ Limited</td>
+        </tr>
+        <tr>
+          <td>Browser Extension</td>
+          <td class="check">✓ Uses Zotero Connector</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+        </tr>
+        <tr>
+          <td>Reference Resolution</td>
+          <td class="check">✓ 5 APIs</td>
+          <td>✓ CrossRef + translators</td>
+          <td>✓ Limited</td>
+        </tr>
+        <tr>
+          <td>Open Source</td>
+          <td class="check">✓ MIT</td>
+          <td class="check">✓ AGPL</td>
+          <td class="cross">✗</td>
+        </tr>
+        <tr>
+          <td>Scriptable / Automatable</td>
+          <td class="check">✓ CLI + REST API</td>
+          <td>Limited (JavaScript plugins)</td>
+          <td class="cross">✗</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="links">
+      <a href="https://github.com/ayushpatnaikgit/Suchi">GitHub</a>
+      <a href="https://github.com/ayushpatnaikgit/Suchi/releases">Downloads</a>
+      <a href="https://github.com/ayushpatnaikgit/Suchi/issues">Issues</a>
+      <a href="https://github.com/ayushpatnaikgit/Suchi#contributing">Contributing</a>
+    </div>
+    <p>
+      <strong>Suchi</strong> (सूची, Sanskrit for "index") — built with ♥ by
+      <a href="https://github.com/ayushpatnaikgit">Ayush Patnaik</a>
+    </p>
+    <p style="margin-top: 8px;">
+      RAG approach inspired by <a href="https://github.com/VectifyAI/PageIndex">VectifyAI/PageIndex</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

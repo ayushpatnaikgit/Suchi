@@ -9,6 +9,14 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/ayushpatnaikgit/Suchi/actions/workflows/ci.yml"><img src="https://github.com/ayushpatnaikgit/Suchi/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/ayushpatnaikgit/Suchi/releases"><img src="https://img.shields.io/github/v/release/ayushpatnaikgit/Suchi?label=release&color=5170FF" alt="Release"></a>
+  <a href="https://github.com/ayushpatnaikgit/Suchi/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ayushpatnaikgit/Suchi?color=5170FF" alt="License"></a>
+  <a href="https://ayushpatnaikgit.github.io/Suchi/"><img src="https://img.shields.io/badge/docs-website-5170FF" alt="Website"></a>
+</p>
+
+<p align="center">
+  <a href="https://ayushpatnaikgit.github.io/Suchi/">Website</a> ·
   <a href="#installation">Install</a> ·
   <a href="#desktop-app">Desktop App</a> ·
   <a href="#cli">CLI</a> ·
