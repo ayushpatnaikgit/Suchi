@@ -3,7 +3,7 @@ name = "suchi"
 version = "0.1.0"
 description = "CLI-first reference manager with AI-powered research tools"
 authors = ["Ayush Patnaik"]
-edition = "2024"
+edition = "2021"
 
 [lib]
 name = "suchi_lib"
