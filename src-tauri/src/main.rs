@@ -49,11 +49,14 @@ fn main() {
             if let tauri::WindowEvent::Destroyed = event {
                 // Kill the Python server when the app closes
                 let state = window.state::<PythonServer>();
-                if let Ok(mut guard) = state.0.lock() {
-                    if let Some(ref mut child) = *guard {
-                        let _ = child.kill();
-                    }
+                let mut guard = match state.0.lock() {
+                    Ok(g) => g,
+                    Err(_) => return,
+                };
+                if let Some(ref mut child) = *guard {
+                    let _ = child.kill();
                 }
+                drop(guard);
             }
         })
         .run(tauri::generate_context!())
