@@ -1,6 +1,6 @@
 {
   "productName": "Suchi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.suchi.app",
   "build": {
     "beforeDevCommand": "cd ../frontend && npm run dev",

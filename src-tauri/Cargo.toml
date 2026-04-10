@@ -1,6 +1,6 @@
 [package]
 name = "suchi"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI-first reference manager with AI-powered research tools"
 authors = ["Ayush Patnaik"]
 edition = "2021"
