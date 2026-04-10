@@ -1734,5 +1734,55 @@ def share(
     console.print(f"[green]✓ Shared '{collection_name}' with {email} ({role})[/green]")
 
 
+@app.command()
+def logs(
+    follow: bool = typer.Option(False, "--follow", "-f", help="Tail the log file (like tail -f)"),
+    lines: int = typer.Option(100, "--lines", "-n", help="Number of lines to show"),
+    path: bool = typer.Option(False, "--path", help="Print the log file path and exit"),
+    clear: bool = typer.Option(False, "--clear", help="Truncate the log file"),
+):
+    """Show the Suchi backend logs.
+
+    The bundled desktop app writes logs to ~/.config/suchi/logs/suchi-server.log.
+    Use this command to see recent log output or follow it live while debugging.
+
+    Examples:
+        suchi logs                    # Show the last 100 lines
+        suchi logs -f                 # Tail live (Ctrl-C to exit)
+        suchi logs -n 500             # Show the last 500 lines
+        suchi logs --path             # Print the log file path
+        suchi logs --clear            # Truncate the log file
+    """
+    import subprocess
+
+    log_file = Path.home() / ".config" / "suchi" / "logs" / "suchi-server.log"
+
+    if path:
+        console.print(str(log_file))
+        return
+
+    if clear:
+        if log_file.exists():
+            log_file.write_text("")
+            console.print(f"[green]Cleared:[/green] {log_file}")
+        else:
+            console.print(f"[yellow]Log file does not exist yet:[/yellow] {log_file}")
+        return
+
+    if not log_file.exists():
+        console.print(f"[yellow]Log file not found:[/yellow] {log_file}")
+        console.print("[dim]The backend hasn't been started yet, or it hasn't written any logs.[/dim]")
+        console.print("[dim]Start the server with:[/dim] suchi serve")
+        raise typer.Exit(1)
+
+    try:
+        if follow:
+            subprocess.run(["tail", "-f", "-n", str(lines), str(log_file)])
+        else:
+            subprocess.run(["tail", "-n", str(lines), str(log_file)])
+    except KeyboardInterrupt:
+        pass
+
+
 if __name__ == "__main__":
     app()
