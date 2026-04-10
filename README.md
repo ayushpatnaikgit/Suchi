@@ -63,13 +63,14 @@ Download the latest release — everything is bundled, no setup needed:
 | **Windows** | [Suchi-Setup.exe](https://github.com/ayushpatnaikgit/Suchi/releases) |
 | **Linux** | [Suchi.AppImage](https://github.com/ayushpatnaikgit/Suchi/releases) |
 
-**macOS users:** Suchi is not yet notarized with an Apple Developer ID, so macOS may say the app is "damaged" on first launch. Run this once to fix it:
+**macOS users — first launch:** Suchi is not yet notarized with an Apple Developer ID (notarization costs $99/year), so macOS Gatekeeper will show a warning the first time you open it. Easiest fix:
 
-```bash
-xattr -cr /Applications/Suchi.app
-```
+1. **Right-click** (or Control-click) on `Suchi.app`
+2. Click **Open** from the menu
+3. In the warning dialog, click **Open** again
+4. Future launches work normally by double-clicking
 
-Then double-click to launch normally.
+Alternative: go to **System Settings → Privacy & Security** and click **"Open Anyway"** next to the Suchi message.
 
 ### CLI Only
 

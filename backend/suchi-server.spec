@@ -88,26 +88,28 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+# Build a single-file executable so it can be bundled as a Tauri externalBin.
+# At runtime, PyInstaller extracts the embedded files to a temp directory and
+# then runs the Python interpreter from there. Startup is ~1-2s slower than a
+# directory bundle but it's a single file that Tauri can bundle directly.
 exe = EXE(
     pyz,
     a.scripts,
-    [],
-    exclude_binaries=True,
-    name='suchi-server',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=True,
-    upx=True,
-    console=False,  # No console window on Windows
-)
-
-coll = COLLECT(
-    exe,
     a.binaries,
     a.zipfiles,
     a.datas,
-    strip=True,
+    [],
+    name='suchi-server',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
     upx=True,
     upx_exclude=[],
-    name='suchi-server',
+    runtime_tmpdir=None,
+    console=False,  # No console window on Windows
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
 )

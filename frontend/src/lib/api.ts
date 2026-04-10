@@ -1,6 +1,11 @@
 import type { Entry, Collection } from "./types";
 
-const BASE = "/api";
+// Absolute URL to the local Python backend. Using an absolute URL works both
+// in dev (Vite's proxy is bypassed — backend has CORS open) and in the bundled
+// Tauri app (where there's no dev proxy and relative /api paths would resolve
+// to the Tauri protocol origin).
+export const API_HOST = "http://127.0.0.1:9876";
+const BASE = `${API_HOST}/api`;
 
 async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${url}`, {

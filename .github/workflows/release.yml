@@ -17,13 +17,10 @@ jobs:
         include:
           - platform: macos-latest
             target: aarch64-apple-darwin
-            sidecar-suffix: -aarch64-apple-darwin
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            sidecar-suffix: -x86_64-unknown-linux-gnu
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            sidecar-suffix: -x86_64-pc-windows-msvc.exe
 
     runs-on: ${{ matrix.platform }}
 
@@ -47,21 +44,23 @@ jobs:
           pyinstaller suchi-server.spec --noconfirm
         shell: bash
 
-      - name: Rename sidecar binary
+      - name: Rename sidecar binary for Tauri externalBin
         run: |
-          cd backend/dist/suchi-server
+          cd backend/dist
           if [ "${{ runner.os }}" = "Windows" ]; then
-            mv suchi-server.exe "suchi-server${{ matrix.sidecar-suffix }}"
+            mv suchi-server.exe "suchi-server-${{ matrix.target }}.exe"
           else
-            mv suchi-server "suchi-server${{ matrix.sidecar-suffix }}"
+            mv suchi-server "suchi-server-${{ matrix.target }}"
+            chmod +x "suchi-server-${{ matrix.target }}"
           fi
+          ls -la
         shell: bash
 
       - name: Upload sidecar artifact
         uses: actions/upload-artifact@v4
         with:
           name: sidecar-${{ matrix.target }}
-          path: backend/dist/suchi-server/
+          path: backend/dist/suchi-server-${{ matrix.target }}*
 
   build-tauri:
     needs: build-python-sidecar
@@ -116,7 +115,9 @@ jobs:
 
       - name: Make sidecar executable
         if: runner.os != 'Windows'
-        run: chmod +x src-tauri/sidecar/*
+        run: |
+          chmod +x src-tauri/sidecar/*
+          ls -la src-tauri/sidecar/
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0

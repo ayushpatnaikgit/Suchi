@@ -35,6 +35,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": [
+      "sidecar/suchi-server"
+    ],
     "macOS": {
       "minimumSystemVersion": "10.15"
     }

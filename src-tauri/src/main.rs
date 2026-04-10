@@ -1,48 +1,53 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
-use std::process::{Command, Child};
 use std::sync::Mutex;
+use tauri::Manager;
+use tauri_plugin_shell::process::{CommandChild, CommandEvent};
+use tauri_plugin_shell::ShellExt;
 
-struct PythonServer(Mutex<Option<Child>>);
+// Holds the child process handle for the Python sidecar.
+// Wrapped in Mutex<Option<...>> so we can take ownership when killing it.
+struct PythonServer(Mutex<Option<CommandChild>>);
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
-            // Start the Python backend server as a sidecar process
-            let sidecar_path = app
-                .path()
-                .resource_dir()
-                .expect("failed to resolve resource dir")
-                .join("sidecar")
-                .join("suchi-server");
+            // Start the bundled PyInstaller-packaged Python backend as a sidecar.
+            // The binary is registered as an externalBin in tauri.conf.json and
+            // bundled with the app at a platform-specific path — Tauri resolves
+            // this automatically via Command::sidecar.
+            let sidecar_command = app
+                .shell()
+                .sidecar("suchi-server")
+                .expect("failed to create sidecar command");
 
-            let child = if sidecar_path.exists() {
-                // Production: use bundled PyInstaller binary
-                match Command::new(&sidecar_path).spawn() {
-                    Ok(child) => Some(child),
-                    Err(e) => {
-                        eprintln!("Failed to start bundled suchi-server: {}", e);
-                        None
+            let (mut rx, child) = sidecar_command
+                .spawn()
+                .expect("failed to spawn suchi-server sidecar");
+
+            // Log sidecar output to the Tauri console for debugging.
+            tauri::async_runtime::spawn(async move {
+                while let Some(event) = rx.recv().await {
+                    match event {
+                        CommandEvent::Stdout(line) => {
+                            eprintln!("[suchi-server] {}", String::from_utf8_lossy(&line));
+                        }
+                        CommandEvent::Stderr(line) => {
+                            eprintln!("[suchi-server err] {}", String::from_utf8_lossy(&line));
+                        }
+                        CommandEvent::Terminated(payload) => {
+                            eprintln!("[suchi-server] terminated: code={:?}", payload.code);
+                            break;
+                        }
+                        _ => {}
                     }
                 }
-            } else {
-                // Development: start uvicorn directly
-                match Command::new("python3")
-                    .args(["-m", "uvicorn", "suchi.api:app", "--host", "127.0.0.1", "--port", "9876"])
-                    .spawn()
-                {
-                    Ok(child) => Some(child),
-                    Err(e) => {
-                        eprintln!("Failed to start dev suchi server: {}", e);
-                        None
-                    }
-                }
-            };
+            });
 
-            app.manage(PythonServer(Mutex::new(child)));
+            app.manage(PythonServer(Mutex::new(Some(child))));
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -53,10 +58,9 @@ fn main() {
                     Ok(g) => g,
                     Err(_) => return,
                 };
-                if let Some(ref mut child) = *guard {
+                if let Some(child) = guard.take() {
                     let _ = child.kill();
                 }
-                drop(guard);
             }
         })
         .run(tauri::generate_context!())
