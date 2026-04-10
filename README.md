@@ -60,9 +60,16 @@ Download the latest release — everything is bundled, no setup needed:
 | Platform | Download |
 |----------|----------|
 | **macOS (Apple Silicon)** | [Suchi.dmg](https://github.com/ayushpatnaikgit/Suchi/releases) |
-| **macOS (Intel)** | [Suchi.dmg](https://github.com/ayushpatnaikgit/Suchi/releases) |
 | **Windows** | [Suchi-Setup.exe](https://github.com/ayushpatnaikgit/Suchi/releases) |
 | **Linux** | [Suchi.AppImage](https://github.com/ayushpatnaikgit/Suchi/releases) |
+
+**macOS users:** Suchi is not yet notarized with an Apple Developer ID, so macOS may say the app is "damaged" on first launch. Run this once to fix it:
+
+```bash
+xattr -cr /Applications/Suchi.app
+```
+
+Then double-click to launch normally.
 
 ### CLI Only
 

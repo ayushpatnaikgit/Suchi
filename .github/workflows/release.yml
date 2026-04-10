@@ -122,6 +122,10 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Ad-hoc sign macOS builds (no Apple Developer account required).
+          # Prevents the "app is damaged" error on download.
+          # For proper zero-friction install, set up Apple Developer ID + notarization.
+          APPLE_SIGNING_IDENTITY: '-'
         with:
           projectPath: .
           tagName: ${{ github.ref_name }}
@@ -138,6 +142,14 @@ jobs:
             | **macOS (Apple Silicon)** | `.dmg` |
             | **Windows** | `.exe` installer |
             | **Linux** | `.AppImage` |
+
+            ### macOS users — first launch
+            The `.dmg` is ad-hoc signed (not notarized with Apple Developer ID).
+            After installing, run this once to remove the quarantine flag:
+            ```bash
+            xattr -cr /Applications/Suchi.app
+            ```
+            Then double-click to launch normally.
 
             ### CLI only (no desktop app)
             ```bash
