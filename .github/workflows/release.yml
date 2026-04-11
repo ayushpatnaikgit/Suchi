@@ -181,5 +181,12 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: cd backend && twine upload dist/*
-        continue-on-error: true  # Don't fail the release if PyPI upload fails
+        run: |
+          cd backend
+          if [ -z "$TWINE_PASSWORD" ]; then
+            echo "::warning::PYPI_TOKEN secret not set — skipping PyPI upload."
+            echo "Set it at https://github.com/ayushpatnaikgit/Suchi/settings/secrets/actions"
+            exit 0
+          fi
+          # --skip-existing so re-tagging the same version doesn't fail the whole release
+          twine upload --skip-existing dist/*
