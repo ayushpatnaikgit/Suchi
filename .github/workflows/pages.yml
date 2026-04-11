@@ -26,11 +26,10 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          # Auto-create the Pages site on first run if it doesn't exist yet.
-          # Avoids the "Get Pages site failed - Not Found" error when the
-          # repo has never had Pages enabled.
-          enablement: true
+        # Note: Pages must be enabled manually once at
+        # https://github.com/ayushpatnaikgit/Suchi/settings/pages
+        # with Source = "GitHub Actions". The GITHUB_TOKEN can't create
+        # the site via the API (Resource not accessible by integration).
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
