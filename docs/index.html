@@ -44,10 +44,6 @@
       padding: 80px 0 60px;
     }
 
-    .hero-logo {
-      height: 80px;
-      margin-bottom: 24px;
-    }
 
     .hero h1 {
       font-family: 'JetBrains Mono', monospace;
@@ -220,13 +216,28 @@
       margin-bottom: 32px;
     }
 
+    .cli-intro {
+      text-align: center;
+      color: var(--text-dim);
+      margin-bottom: 40px;
+      font-size: 1rem;
+    }
+
+    .cli-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
     .terminal {
       background: #0d1117;
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      max-width: 700px;
-      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .terminal-header {
@@ -235,6 +246,7 @@
       display: flex;
       gap: 6px;
       align-items: center;
+      border-bottom: 1px solid var(--border);
     }
 
     .terminal-dot {
@@ -246,17 +258,33 @@
     .terminal-dot.yellow { background: #febc2e; }
     .terminal-dot.green { background: #28c840; }
 
-    .terminal-body {
-      padding: 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      line-height: 1.8;
+    .terminal-title {
+      margin-left: 12px;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
     }
 
-    .terminal-body .prompt { color: var(--brand-light); }
+    .terminal-body {
+      padding: 18px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .terminal-body .prompt { color: var(--brand-light); font-weight: 600; }
+    .terminal-body .prompt2 { color: #7dd3fc; padding-left: 2px; }
     .terminal-body .cmd { color: #e6edf3; }
     .terminal-body .output { color: var(--text-dim); }
     .terminal-body .success { color: #3fb950; }
+    .terminal-body .comment { color: #6b7280; font-style: italic; }
+
+    @media (max-width: 640px) {
+      .cli-grid { grid-template-columns: 1fr; }
+      .terminal-body { font-size: 0.75rem; }
+    }
 
     /* Comparison */
     .comparison {
@@ -325,7 +353,6 @@
 
 <section class="hero">
   <div class="container">
-    <img src="https://raw.githubusercontent.com/ayushpatnaikgit/Suchi/main/assets/logo.png" alt="Suchi" class="hero-logo">
     <h1><span class="bracket">[</span> <span class="name">suchi</span> <span class="bracket">]</span></h1>
     <p class="subtitle">A modern reference manager built on Unix principles</p>
     <p class="tagline">Beautiful desktop app. Powerful CLI. AI-powered research tools.</p>
@@ -414,30 +441,167 @@
 <section class="cli-demo">
   <div class="container">
     <h2>Unix Philosophy</h2>
-    <div class="terminal">
-      <div class="terminal-header">
-        <div class="terminal-dot red"></div>
-        <div class="terminal-dot yellow"></div>
-        <div class="terminal-dot green"></div>
+    <p class="cli-intro">Every feature has a CLI command. Pipe it, script it, automate it.</p>
+
+    <div class="cli-grid">
+
+      <!-- Adding papers -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">Adding papers</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Add by DOI, arXiv, ISBN, or URL — metadata auto-resolved</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi add 10.1038/nature12373</span></div>
+          <div class="success">Added: Nanometre-scale thermometry in a living cell</div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">suchi add arxiv:1706.03762 --tag transformers</span></div>
+          <div class="success">Added: Attention Is All You Need</div>
+          <br>
+          <div><span class="comment"># Bulk import from a PDF folder</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">find ~/Downloads -name '*.pdf' | xargs -I{} suchi add --pdf {}</span></div>
+          <div class="output">Added 17 papers from PDFs (metadata extracted via GROBID)</div>
+        </div>
       </div>
-      <div class="terminal-body">
-        <div><span class="prompt">$</span> <span class="cmd">suchi add 10.1038/nature12373</span></div>
-        <div class="success">Added: Nanometre-scale thermometry in a living cell</div>
-        <br>
-        <div><span class="prompt">$</span> <span class="cmd">suchi search "machine learning" --json | jq '.[].title'</span></div>
-        <div class="output">"SurvTRACE: transformers for survival analysis"</div>
-        <div class="output">"RNN-SURV: A Deep Recurrent Model for Survival Analysis"</div>
-        <br>
-        <div><span class="prompt">$</span> <span class="cmd">suchi chat kucsko-2013 "What method did they use?"</span></div>
-        <div class="output">They used NV diamond centers as nanoscale thermometers,</div>
-        <div class="output">measuring temperature via spin-dependent fluorescence...</div>
-        <br>
-        <div><span class="prompt">$</span> <span class="cmd">suchi export --format bibtex | pbcopy</span></div>
-        <div class="success">Exported 415 entries to clipboard</div>
-        <br>
-        <div><span class="prompt">$</span> <span class="cmd">suchi sync</span></div>
-        <div class="success">Synced: 3 pushed, 1 pulled, 0 conflicts</div>
+
+      <!-- Collection chat -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">Converse with a whole collection</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Chat with a single paper</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi chat kucsko-2013 "What method did they use?"</span></div>
+          <div class="output">They used NV diamond centers as nanoscale thermometers...</div>
+          <br>
+          <div><span class="comment"># Chat with an entire collection — PageIndex picks the right papers</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi chat --collection "Thesis/Chapter 2"</span></div>
+          <div class="prompt2">&gt; Which papers discuss measurement accuracy?</div>
+          <div class="output">3 papers are most relevant:</div>
+          <div class="output">  [[Kucsko 2013]] — reports 1.8 mK accuracy on p.4</div>
+          <div class="output">  [[Neumann 2013]] — single-shot 5 mK accuracy on p.2</div>
+          <div class="output">  [[Toyli 2013]] — Allan deviation analysis on p.6</div>
+          <div class="prompt2">&gt; Synthesize the methods across them</div>
+          <div class="output">All three use NV-diamond centers but differ in...</div>
+        </div>
       </div>
+
+      <!-- Index & RAG -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">PageIndex RAG</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Build a reasoning tree for one paper (takes ~10s)</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi index kucsko-2013</span></div>
+          <div class="output">Indexed: Nanometre-scale thermometry in a living cell</div>
+          <div class="output">  22 pages → 9 sections</div>
+          <br>
+          <div><span class="comment"># Or index everything in a collection at once</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi index --collection "Thesis References"</span></div>
+          <div class="output">Indexing 24 papers...</div>
+          <div class="success">Done: 24 papers indexed, collection meta-index built</div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">suchi index --all</span></div>
+          <div class="success">Done: 415 indexed, 0 errors</div>
+        </div>
+      </div>
+
+      <!-- Organisations & sharing -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">Organisations &amp; sharing</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Sign in to Google (opens browser, localhost OAuth)</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi login</span></div>
+          <div class="success">Signed in as you@lab.edu</div>
+          <br>
+          <div><span class="comment"># Create an organisation for your research group</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi org create "Quantum Sensing Lab"</span></div>
+          <div class="success">Created organisation: Quantum Sensing Lab</div>
+          <br>
+          <div><span class="comment"># Invite collaborators with different roles</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi org invite "Quantum Sensing Lab" alice@lab.edu --role editor</span></div>
+          <div class="success">Invited alice@lab.edu as editor</div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi org invite "Quantum Sensing Lab" intern@lab.edu --role viewer</span></div>
+          <div class="success">Invited intern@lab.edu as viewer</div>
+          <br>
+          <div><span class="comment"># Add shared collections to the org</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi org add-collection "Quantum Sensing Lab" nv-diamond</span></div>
+          <div class="output">Collection 'nv-diamond' now shared with 3 members</div>
+          <br>
+          <div><span class="comment"># Share a single collection outside any org</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi share thesis-committee --with supervisor@uni.edu --role editor</span></div>
+          <div class="success">Shared via Google Drive</div>
+        </div>
+      </div>
+
+      <!-- Discover -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">Paper discovery</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Papers that cite this one (downstream)</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi cited-by kucsko-2013 --limit 5</span></div>
+          <div class="output">  Fluorescence thermometry via ambient light (2024) — 12 cites</div>
+          <div class="output">  Chip calorimetry for single-cell analysis (2024) — 8 cites</div>
+          <div class="output">  Nanoscale sensing in dynamic environments (2024) — 15 cites</div>
+          <br>
+          <div><span class="comment"># Related papers (semantic similarity)</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi related kucsko-2013</span></div>
+          <br>
+          <div><span class="comment"># More papers by the same authors</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi by-author "Mikhail Lukin" --limit 10</span></div>
+          <br>
+          <div><span class="comment"># Add a discovered paper to the same collection</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi add 10.1038/nature18274 --collection nv-diamond</span></div>
+        </div>
+      </div>
+
+      <!-- Export & pipe -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-title">Search, export, automate</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># Search with jq for scripting</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi search "transformer" --json | jq -r '.[].title'</span></div>
+          <div class="output">Attention Is All You Need</div>
+          <div class="output">BERT: Pre-training of Deep Bidirectional Transformers</div>
+          <br>
+          <div><span class="comment"># Export a collection as BibTeX to clipboard</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi export --collection thesis --format bibtex | pbcopy</span></div>
+          <div class="success">Exported 47 entries to clipboard</div>
+          <br>
+          <div><span class="comment"># Backfill missing DOIs via CrossRef title search</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi backfill-dois --all</span></div>
+          <div class="success">Resolved 56 missing DOIs (8 → 64)</div>
+          <br>
+          <div><span class="comment"># Follow backend logs while debugging</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">suchi logs -f</span></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
