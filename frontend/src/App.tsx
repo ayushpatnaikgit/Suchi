@@ -192,9 +192,13 @@ function App() {
   const handleAdd = useCallback(
     async (identifier: string) => {
       const entry = await addByIdentifier(identifier);
+      // If a collection/subcollection is selected, add the new entry to it
+      if (selectedCollection && entry) {
+        await addEntryToCollection(selectedCollection, entry.id);
+      }
       setSelectedEntry(entry);
     },
-    [addByIdentifier]
+    [addByIdentifier, selectedCollection, addEntryToCollection]
   );
 
   const handleDelete = useCallback(

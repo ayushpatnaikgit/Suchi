@@ -96,20 +96,24 @@ async def save_items(request: Request):
             status_code=400,
         ))
 
-    # Check if the connector specified a target collection (from the dropdown)
-    # Target IDs are prefixed: "L1" = root library, "C<id>" = collection
+    # Determine which collection to save into, in priority order:
+    # 1. Explicit target from the connector dropdown (prefixed "C<id>")
+    # 2. The currently selected collection in the Suchi UI (_selected_collection_id)
+    # 3. No collection (root library)
     target = body.get("target") or body.get("uri", "")
-    override_collection = None
+    target_collection = None
     if isinstance(target, str) and target.startswith("C"):
-        override_collection = target[1:]  # Strip "C" prefix
+        target_collection = target[1:]  # Strip "C" prefix
+    elif _selected_collection_id:
+        target_collection = _selected_collection_id
 
     saved = []
     for item in items:
         try:
             entry = _zotero_item_to_suchi(item)
-            # Override collection if user picked from dropdown
-            if override_collection:
-                entry["collections"] = [override_collection]
+            # Set target collection
+            if target_collection:
+                entry["collections"] = [target_collection]
             result = library.add_entry_manual(entry)
 
             # Download PDF attachments if available
