@@ -1784,5 +1784,186 @@ def logs(
         pass
 
 
+@app.command(name="deep-research")
+def deep_research_cmd(
+    query: str = typer.Argument(..., help="Research question"),
+    collection: Optional[str] = typer.Option(None, "--collection", "-c", help="Scope to a collection"),
+    entry: Optional[str] = typer.Option(None, "--entry", "-e", help="Scope to a specific paper"),
+    max_mode: bool = typer.Option(False, "--max", help="Use Deep Research Max (~$3-7, 160 sources, 5-15 min)"),
+    json_out: bool = typer.Option(False, "--json"),
+    follow_up: Optional[str] = typer.Option(None, "--follow-up", help="Follow-up on a previous research (interaction ID)"),
+):
+    """Search the web for papers and research using Gemini Deep Research.
+
+    First answers from your library (free, instant), then uses Google's
+    Deep Research agent to browse 80-160 web sources for a comprehensive report.
+
+    Two tiers:
+      Default (Quick): ~80 sources, 2-3 min, ~$1-3
+      --max (Max):     ~160 sources, 5-15 min, ~$3-7
+
+    Discovered papers can be added to your library with: suchi add <DOI>
+
+    Examples:
+        suchi deep-research "latest advances in NV diamond thermometry"
+        suchi deep-research --collection "Thesis" "gaps in survival analysis methods"
+        suchi deep-research --entry kucsko-2013 "follow-up work on this paper" --max
+        suchi deep-research "transformer architectures" --json | jq '.discovered_papers'
+    """
+    from .deep_research import deep_research, _build_library_context
+    from .pageindex.retriever import retrieve_pages
+    from .pageindex.indexer import get_cached_index
+
+    tier = "max" if max_mode else "quick"
+
+    # Step 1: Answer from library first
+    console.print(f"\n[bold]Step 1:[/bold] Searching your library...\n")
+
+    if entry:
+        e = library.get_entry(entry)
+        if not e:
+            console.print(f"[red]Entry not found: {entry}[/red]"); raise typer.Exit(1)
+
+        entry_dir = library.get_entry_dir(entry)
+        pdfs = [f for f in e.get("files", []) if f.endswith(".pdf")]
+        if entry_dir and pdfs:
+            cached = get_cached_index(entry_dir)
+            if cached:
+                pages = _run_async(asyncio.coroutine(lambda: retrieve_pages(query, entry_dir / pdfs[0], tree_index=cached))() if False else retrieve_pages(query, entry_dir / pdfs[0], tree_index=cached))
+                if pages:
+                    console.print("[dim]Relevant pages from your paper:[/dim]")
+                    for p in pages[:3]:
+                        console.print(f"  Page {p['page_num']}: {p.get('relevance_reason', '')[:80]}")
+                    console.print()
+
+    elif collection:
+        col_entries = library.list_entries(collection=collection, limit=100)
+        if col_entries:
+            results = library.search_entries(query, limit=5)
+            if results:
+                console.print(f"[dim]Found {len(results)} relevant papers in your library:[/dim]")
+                for r in results[:5]:
+                    authors = ", ".join(a.get("family", "") for a in r.get("author", [])[:2])
+                    year = (r.get("date", "") or "").split("-")[0]
+                    console.print(f"  • {r.get('title', '')[:60]} ({authors}, {year})")
+                console.print()
+    else:
+        results = library.search_entries(query, limit=5)
+        if results:
+            console.print(f"[dim]Found {len(results)} relevant papers in your library:[/dim]")
+            for r in results[:5]:
+                authors = ", ".join(a.get("family", "") for a in r.get("author", [])[:2])
+                year = (r.get("date", "") or "").split("-")[0]
+                console.print(f"  • {r.get('title', '')[:60]} ({authors}, {year})")
+            console.print()
+
+    # Step 2: Deep Research
+    tier_label = "[bold red]Max[/bold red] (~$3-7)" if max_mode else "[bold blue]Quick[/bold blue] (~$1-3)"
+    console.print(f"[bold]Step 2:[/bold] Deep Research {tier_label} — browsing the web...\n")
+
+    with console.status(f"[bold]Researching...[/bold] This may take {'5-15' if max_mode else '2-5'} minutes"):
+        result = _run_async(deep_research(
+            query=query,
+            collection_id=collection,
+            entry_id=entry,
+            tier=tier,
+            previous_interaction_id=follow_up,
+        ))
+
+    if json_out:
+        _print_json({
+            "report": result.report,
+            "sources_count": result.sources_count,
+            "discovered_papers": result.discovered_papers,
+            "duration_seconds": result.duration_seconds,
+            "interaction_id": result.interaction_id,
+            "tier": result.tier,
+        })
+    else:
+        console.print(f"\n{'─' * 60}")
+        console.print(result.report)
+        console.print(f"{'─' * 60}\n")
+        console.print(f"[dim]Sources consulted: {result.sources_count}[/dim]")
+        console.print(f"[dim]Duration: {result.duration_seconds:.0f}s[/dim]")
+        console.print(f"[dim]Interaction ID: {result.interaction_id} (use with --follow-up)[/dim]")
+
+        if result.discovered_papers:
+            console.print(f"\n[bold]Discovered {len(result.discovered_papers)} new papers:[/bold]\n")
+            for p in result.discovered_papers:
+                in_lib = "✓" if p.get("in_library") else " "
+                title = p.get("title", p.get("raw_text", "")[:60])[:60]
+                doi = p.get("doi", "")
+                year = p.get("year", "")
+                cited = p.get("cited_by_count", "")
+                console.print(f"  [{in_lib}] {title}")
+                if doi: console.print(f"      DOI: {doi}")
+                if year: console.print(f"      Year: {year}", end="")
+                if cited: console.print(f"  Cited by: {cited}", end="")
+                if doi or year or cited: console.print()
+                if not p.get("in_library") and doi:
+                    console.print(f"      [dim]Add: suchi add {doi}[/dim]")
+                console.print()
+
+
+@app.command()
+def gaps(
+    collection: str = typer.Argument(..., help="Collection ID to analyze"),
+    max_mode: bool = typer.Option(False, "--max", help="Use Deep Research Max for deeper analysis"),
+    json_out: bool = typer.Option(False, "--json"),
+):
+    """Find gaps in a collection — what papers are you missing?
+
+    Analyzes your collection and uses Deep Research to identify:
+    - Missing seminal papers
+    - Uncovered methodologies
+    - Recent work (2023-2026) you should include
+    - Interdisciplinary connections
+
+    Examples:
+        suchi gaps "Thesis/Chapter 2"
+        suchi gaps survival --max
+        suchi gaps "nv-diamond" --json | jq '.discovered_papers[] | select(.cited_by_count > 100)'
+    """
+    from .deep_research import research_gaps
+
+    col = col_service.get_collection(collection)
+    if not col:
+        console.print(f"[red]Collection not found: {collection}[/red]"); raise typer.Exit(1)
+
+    col_entries = library.list_entries(collection=collection, limit=100)
+    console.print(f"\n[bold]Analyzing gaps in:[/bold] {col['name']} ({len(col_entries)} papers)\n")
+
+    tier = "max" if max_mode else "quick"
+    tier_label = "[bold red]Max[/bold red]" if max_mode else "[bold blue]Quick[/bold blue]"
+
+    with console.status(f"[bold]Deep Research {tier_label}...[/bold] Browsing the web for missing papers"):
+        result = _run_async(research_gaps(collection_id=collection, tier=tier))
+
+    if json_out:
+        _print_json({
+            "collection": collection,
+            "report": result.report,
+            "discovered_papers": result.discovered_papers,
+            "sources_count": result.sources_count,
+            "duration_seconds": result.duration_seconds,
+        })
+    else:
+        console.print(f"\n{'─' * 60}")
+        console.print(result.report)
+        console.print(f"{'─' * 60}\n")
+
+        if result.discovered_papers:
+            in_lib = sum(1 for p in result.discovered_papers if p.get("in_library"))
+            new = len(result.discovered_papers) - in_lib
+            console.print(f"[bold]Found {new} papers to add[/bold] ({in_lib} already in library)\n")
+            for p in result.discovered_papers:
+                if p.get("in_library"): continue
+                title = p.get("title", "")[:60]
+                doi = p.get("doi", "")
+                console.print(f"  • {title}")
+                if doi: console.print(f"    [dim]suchi add {doi} --collection {collection}[/dim]")
+            console.print()
+
+
 if __name__ == "__main__":
     app()
