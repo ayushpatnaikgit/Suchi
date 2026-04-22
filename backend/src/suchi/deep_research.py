@@ -196,9 +196,9 @@ USER'S RESEARCH QUESTION:
             if status == "completed":
                 report = ""
                 for output in interaction.outputs:
-                    if hasattr(output, "text"):
+                    if hasattr(output, "text") and output.text is not None:
                         report += output.text
-                    elif hasattr(output, "content"):
+                    elif hasattr(output, "content") and output.content is not None:
                         report += str(output.content)
 
                 duration = time.time() - start_time
