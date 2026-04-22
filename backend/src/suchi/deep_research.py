@@ -17,12 +17,10 @@ Inspired by the flow: library-first, web-second.
 """
 
 import asyncio
-import json
 import logging
 import re
 import time
 from dataclasses import dataclass, field
-from typing import AsyncIterator
 
 from .config import get_config
 from . import library
@@ -70,7 +68,7 @@ def _build_library_context(
         entry = library.get_entry(entry_id)
         if entry:
             authors = ", ".join(f"{a.get('given', '')} {a.get('family', '')}".strip() for a in entry.get("author", []))
-            context_parts.append(f"The user is looking at this paper:")
+            context_parts.append("The user is looking at this paper:")
             context_parts.append(f"  Title: {entry.get('title', '')}")
             context_parts.append(f"  Authors: {authors}")
             if entry.get("date"): context_parts.append(f"  Date: {entry['date']}")

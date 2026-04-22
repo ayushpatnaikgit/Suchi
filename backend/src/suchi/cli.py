@@ -1810,14 +1810,14 @@ def deep_research_cmd(
         suchi deep-research --entry kucsko-2013 "follow-up work on this paper" --max
         suchi deep-research "transformer architectures" --json | jq '.discovered_papers'
     """
-    from .deep_research import deep_research, _build_library_context
+    from .deep_research import deep_research
     from .pageindex.retriever import retrieve_pages
     from .pageindex.indexer import get_cached_index
 
     tier = "max" if max_mode else "quick"
 
     # Step 1: Answer from library first
-    console.print(f"\n[bold]Step 1:[/bold] Searching your library...\n")
+    console.print("\n[bold]Step 1:[/bold] Searching your library...\n")
 
     if entry:
         e = library.get_entry(entry)

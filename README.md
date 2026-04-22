@@ -229,6 +229,53 @@ Every reference in a paper's bibliography is automatically resolved:
 - Returns citation counts, abstracts, DOIs, open access links
 - Results cached to disk — no repeat API calls
 
+### Deep Research (Powered by Gemini 3.1 Pro)
+
+Suchi integrates Google's [Deep Research](https://ai.google.dev/gemini-api/docs/deep-research) agent for autonomous web research. The flow is **library-first, web-second**:
+
+1. **First**: Suchi answers from your library using PageIndex RAG (free, instant, private)
+2. **Then**: If you want more, Deep Research browses 80-160 web sources and produces a comprehensive report
+
+Two tiers:
+
+| | Quick | Max |
+|---|---|---|
+| **Sources** | ~80 | ~160 |
+| **Time** | 2-5 min | 5-15 min |
+| **Cost** | ~$1-3 | ~$3-7 |
+| **Agent** | `deep-research-preview` | `deep-research-max-preview` |
+
+```bash
+# Literature review — answers from library first, then searches the web
+$ suchi deep-research --collection "Thesis" "gaps in survival analysis methods"
+
+Step 1: Searching your library...
+  Found 5 relevant papers in your library
+
+Step 2: Deep Research Quick (~$1-3) — browsing the web...
+  ────────────────────────────────────
+  # Recurrent Event Analysis Under Informative Censoring
+  ...35,000 char report with citations...
+  ────────────────────────────────────
+  Discovered 12 new papers:
+    [ ] Analyzing Recurrent Event Data With Informative Censoring (259 cites)
+        suchi add 10.1198/016214501753209031
+    [ ] HACSurv: Hierarchical Copula-Based Survival Analysis (AISTATS 2025)
+        suchi add 10.48550/arxiv.2410.15180
+    [✓] The Statistical Analysis of Recurrent Events (737 cites) — already in library
+
+# Find gaps in a collection
+$ suchi gaps "Thesis/Chapter 2"
+
+# Use Max tier for deeper analysis
+$ suchi deep-research --collection survival "informative censoring" --max
+
+# Pipe discovered papers into your library
+$ suchi deep-research "transformers" --json | \
+    jq '.discovered_papers[] | select(.cited_by_count > 100) | .doi' | \
+    xargs -I{} suchi add {} --collection thesis
+```
+
 ## Architecture
 
 ```

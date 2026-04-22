@@ -1,9 +1,7 @@
 """Deep Research API routes."""
 
-import asyncio
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
 
 from ..deep_research import deep_research, research_gaps, DeepResearchResult
 
