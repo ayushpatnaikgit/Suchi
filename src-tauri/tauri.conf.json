@@ -1,6 +1,6 @@
 {
   "productName": "Suchi",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "com.suchi.app",
   "build": {
     "beforeDevCommand": "cd ../frontend && npm run dev",
@@ -39,7 +39,8 @@
       "sidecar/suchi-server"
     ],
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "10.15",
+      "entitlements": "entitlements.plist"
     }
   }
 }

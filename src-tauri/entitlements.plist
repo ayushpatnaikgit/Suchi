@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    The backend is a PyInstaller onefile binary (suchi-server) that unpacks an
+    embedded Python.framework to a temp dir at runtime. That framework keeps
+    python.org's Team ID, which differs from our (ad-hoc / Developer ID) signed
+    executable. Under hardened runtime, library validation rejects loading a
+    library with a mismatched Team ID, so the sidecar crashes on launch with:
+      "different Team IDs ... not valid for use in process"
+    Disabling library validation lets the sidecar dlopen its own bundled Python.
+  -->
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+  <key>com.apple.security.cs.allow-dyld-environment-variables</key>
+  <true/>
+</dict>
+</plist>
